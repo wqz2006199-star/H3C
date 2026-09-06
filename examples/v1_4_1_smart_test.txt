@@ -1,0 +1,8 @@
+system-view
+vlan 10
+interface GigabitEthernet1/0/1
+port link-typ access
+port access vlan 10
+quit
+interface Vlanif10
+ip address 192.168.10.1 255.255.255.0

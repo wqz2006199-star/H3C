@@ -1,0 +1,1974 @@
+[
+  {
+    "id": "VLAN001",
+    "command": "vlan",
+    "module": "VLAN",
+    "syntax": "vlan vlan-id",
+    "description": "创建 VLAN 或进入指定 VLAN 配置模式。",
+    "parameters": [
+      {
+        "name": "vlan-id",
+        "description": "VLAN编号，例如10、20。"
+      }
+    ],
+    "scenes": "用于网络隔离，将物理交换网络划分为多个逻辑广播域。",
+    "example": "vlan 10\nname Office",
+    "errors": [
+      "VLAN编号错误",
+      "接口加入了不存在的VLAN"
+    ],
+    "troubleshooting": [
+      "display vlan"
+    ],
+    "related_commands": [
+      "port access vlan",
+      "port trunk permit vlan"
+    ]
+  },
+  {
+    "id": "VLAN002",
+    "command": "name",
+    "module": "VLAN",
+    "syntax": "name vlan-name",
+    "description": "为当前 VLAN 配置名称。",
+    "parameters": [
+      {
+        "name": "vlan-name",
+        "description": "VLAN名称。"
+      }
+    ],
+    "scenes": "为VLAN设置便于识别的业务名称。",
+    "example": "vlan 10\nname Office",
+    "errors": [
+      "名称包含非法字符",
+      "未进入VLAN视图"
+    ],
+    "troubleshooting": [
+      "display vlan"
+    ],
+    "related_commands": [
+      "vlan"
+    ]
+  },
+  {
+    "id": "VLAN003",
+    "command": "display vlan",
+    "module": "VLAN",
+    "syntax": "display vlan [vlan-id]",
+    "description": "查看 VLAN 编号、名称及成员接口等信息。",
+    "parameters": [
+      {
+        "name": "vlan-id",
+        "description": "可选，指定要查看的VLAN。"
+      }
+    ],
+    "scenes": "VLAN故障排查、确认VLAN是否创建及端口成员关系。",
+    "example": "display vlan 10",
+    "errors": [
+      "看不到目标VLAN",
+      "端口未加入目标VLAN"
+    ],
+    "troubleshooting": [
+      "display vlan",
+      "display interface brief"
+    ],
+    "related_commands": [
+      "vlan",
+      "port access vlan"
+    ]
+  },
+  {
+    "id": "VLAN004",
+    "command": "port access vlan",
+    "module": "VLAN",
+    "syntax": "port access vlan vlan-id",
+    "description": "将Access接口加入指定VLAN。",
+    "parameters": [
+      {
+        "name": "vlan-id",
+        "description": "目标VLAN编号。"
+      }
+    ],
+    "scenes": "PC、打印机、摄像头等终端接入口配置。",
+    "example": "interface GigabitEthernet1/0/1\nport link-type access\nport access vlan 10",
+    "errors": [
+      "VLAN不存在",
+      "接口不是Access模式"
+    ],
+    "troubleshooting": [
+      "display vlan",
+      "display current-configuration interface"
+    ],
+    "related_commands": [
+      "port link-type access",
+      "vlan"
+    ]
+  },
+  {
+    "id": "VLAN005",
+    "command": "port trunk permit vlan",
+    "module": "VLAN",
+    "syntax": "port trunk permit vlan { vlan-id-list | all }",
+    "description": "配置Trunk接口允许通过的VLAN。",
+    "parameters": [
+      {
+        "name": "vlan-id-list",
+        "description": "一个或多个VLAN编号，也可使用范围或all。"
+      }
+    ],
+    "scenes": "交换机互联、跨交换机传递多个VLAN。",
+    "example": "interface GigabitEthernet1/0/24\nport link-type trunk\nport trunk permit vlan 10 20 30",
+    "errors": [
+      "VLAN未创建",
+      "Trunk未放行业务VLAN"
+    ],
+    "troubleshooting": [
+      "display vlan",
+      "display current-configuration interface"
+    ],
+    "related_commands": [
+      "port link-type trunk",
+      "undo port trunk permit vlan"
+    ]
+  },
+  {
+    "id": "VLAN006",
+    "command": "undo port trunk permit vlan",
+    "module": "VLAN",
+    "syntax": "undo port trunk permit vlan vlan-id-list",
+    "description": "从Trunk接口允许列表中移除指定VLAN。",
+    "parameters": [
+      {
+        "name": "vlan-id-list",
+        "description": "需要移除的VLAN编号。"
+      }
+    ],
+    "scenes": "调整Trunk允许通过的VLAN范围。",
+    "example": "interface GigabitEthernet1/0/24\nundo port trunk permit vlan 30",
+    "errors": [
+      "误删业务VLAN",
+      "接口不是Trunk模式"
+    ],
+    "troubleshooting": [
+      "display current-configuration interface",
+      "display vlan"
+    ],
+    "related_commands": [
+      "port trunk permit vlan",
+      "port link-type trunk"
+    ]
+  },
+  {
+    "id": "IF001",
+    "command": "interface",
+    "module": "Interface",
+    "syntax": "interface interface-type interface-number",
+    "description": "进入接口配置视图。",
+    "parameters": [
+      {
+        "name": "interface-type",
+        "description": "接口类型，例如GigabitEthernet、Vlan-interface。"
+      },
+      {
+        "name": "interface-number",
+        "description": "接口编号。"
+      }
+    ],
+    "scenes": "配置接口模式、IP地址、VLAN等。",
+    "example": "interface GigabitEthernet1/0/1",
+    "errors": [
+      "接口名称错误",
+      "接口编号不存在"
+    ],
+    "troubleshooting": [
+      "display interface brief"
+    ],
+    "related_commands": [
+      "shutdown",
+      "undo shutdown",
+      "display interface"
+    ]
+  },
+  {
+    "id": "IF002",
+    "command": "port link-type access",
+    "module": "Interface",
+    "syntax": "port link-type access",
+    "description": "将二层接口设置为Access模式。",
+    "parameters": [],
+    "scenes": "连接PC、打印机、摄像头等普通终端。",
+    "example": "interface GigabitEthernet1/0/1\nport link-type access\nport access vlan 10",
+    "errors": [
+      "接口实际用于交换机互联却配置为Access",
+      "与Trunk命令同时出现"
+    ],
+    "troubleshooting": [
+      "display current-configuration interface"
+    ],
+    "related_commands": [
+      "port access vlan",
+      "port link-type trunk"
+    ]
+  },
+  {
+    "id": "IF003",
+    "command": "port link-type trunk",
+    "module": "Interface",
+    "syntax": "port link-type trunk",
+    "description": "将二层接口设置为Trunk模式。",
+    "parameters": [],
+    "scenes": "交换机之间互联并承载多个VLAN。",
+    "example": "interface GigabitEthernet1/0/24\nport link-type trunk\nport trunk permit vlan 10 20 30",
+    "errors": [
+      "未配置允许VLAN",
+      "与Access命令逻辑冲突"
+    ],
+    "troubleshooting": [
+      "display current-configuration interface",
+      "display vlan"
+    ],
+    "related_commands": [
+      "port trunk permit vlan",
+      "port link-type access"
+    ]
+  },
+  {
+    "id": "IF004",
+    "command": "shutdown",
+    "module": "Interface",
+    "syntax": "shutdown",
+    "description": "关闭当前接口。",
+    "parameters": [],
+    "scenes": "临时停用端口、故障隔离。",
+    "example": "interface GigabitEthernet1/0/1\nshutdown",
+    "errors": [
+      "误关闭生产接口"
+    ],
+    "troubleshooting": [
+      "display interface brief"
+    ],
+    "related_commands": [
+      "undo shutdown"
+    ]
+  },
+  {
+    "id": "IF005",
+    "command": "undo shutdown",
+    "module": "Interface",
+    "syntax": "undo shutdown",
+    "description": "开启当前接口。",
+    "parameters": [],
+    "scenes": "恢复已关闭的接口。",
+    "example": "interface GigabitEthernet1/0/1\nundo shutdown",
+    "errors": [
+      "未进入正确接口视图"
+    ],
+    "troubleshooting": [
+      "display interface brief"
+    ],
+    "related_commands": [
+      "shutdown"
+    ]
+  },
+  {
+    "id": "IF006",
+    "command": "display interface brief",
+    "module": "Interface",
+    "syntax": "display interface brief",
+    "description": "快速查看接口链路、协议状态及基本信息。",
+    "parameters": [],
+    "scenes": "接口状态巡检和故障定位。",
+    "example": "display interface brief",
+    "errors": [
+      "只看物理状态未结合协议状态判断"
+    ],
+    "troubleshooting": [
+      "display interface brief",
+      "display interface"
+    ],
+    "related_commands": [
+      "display interface"
+    ]
+  },
+  {
+    "id": "IF007",
+    "command": "display interface",
+    "module": "Interface",
+    "syntax": "display interface [interface-type interface-number]",
+    "description": "查看接口详细运行状态、统计和配置相关信息。",
+    "parameters": [],
+    "scenes": "深入排查接口Down、错误包、协商等问题。",
+    "example": "display interface GigabitEthernet1/0/1",
+    "errors": [
+      "查看错误接口",
+      "忽略输入输出错误计数"
+    ],
+    "troubleshooting": [
+      "display interface brief"
+    ],
+    "related_commands": [
+      "display interface brief"
+    ]
+  },
+  {
+    "id": "IF008",
+    "command": "display current-configuration interface",
+    "module": "Interface",
+    "syntax": "display current-configuration interface interface-type interface-number",
+    "description": "查看指定接口的当前配置。",
+    "parameters": [
+      {
+        "name": "interface",
+        "description": "目标接口。"
+      }
+    ],
+    "scenes": "确认Access、Trunk、IP及其他接口配置。",
+    "example": "display current-configuration interface GigabitEthernet1/0/24",
+    "errors": [
+      "检查错接口",
+      "遗漏接口级配置"
+    ],
+    "troubleshooting": [
+      "display interface brief"
+    ],
+    "related_commands": [
+      "interface"
+    ]
+  },
+  {
+    "id": "IP001",
+    "command": "ip address",
+    "module": "IP",
+    "syntax": "ip address ip-address mask",
+    "description": "为三层接口配置IPv4地址和子网掩码。",
+    "parameters": [
+      {
+        "name": "ip-address",
+        "description": "IPv4地址。"
+      },
+      {
+        "name": "mask",
+        "description": "子网掩码或支持的前缀形式。"
+      }
+    ],
+    "scenes": "配置VLAN网关、三层交换接口和路由器接口。",
+    "example": "interface Vlan-interface10\nip address 192.168.10.1 255.255.255.0",
+    "errors": [
+      "IP格式错误",
+      "掩码错误",
+      "IP地址冲突"
+    ],
+    "troubleshooting": [
+      "display ip interface brief",
+      "display interface"
+    ],
+    "related_commands": [
+      "undo ip address",
+      "display ip interface brief"
+    ]
+  },
+  {
+    "id": "IP002",
+    "command": "undo ip address",
+    "module": "IP",
+    "syntax": "undo ip address",
+    "description": "删除当前接口的IPv4地址配置。",
+    "parameters": [],
+    "scenes": "修改接口地址或清理旧配置。",
+    "example": "interface Vlan-interface10\nundo ip address",
+    "errors": [
+      "误删生产网关地址"
+    ],
+    "troubleshooting": [
+      "display ip interface brief"
+    ],
+    "related_commands": [
+      "ip address"
+    ]
+  },
+  {
+    "id": "IP003",
+    "command": "interface Vlan-interface",
+    "module": "IP",
+    "syntax": "interface Vlan-interface vlan-id",
+    "description": "进入VLAN三层接口视图。",
+    "parameters": [
+      {
+        "name": "vlan-id",
+        "description": "VLAN三层接口对应的VLAN编号。"
+      }
+    ],
+    "scenes": "为VLAN配置网关并实现三层转发。",
+    "example": "interface Vlan-interface10\nip address 192.168.10.1 255.255.255.0",
+    "errors": [
+      "VLAN不存在",
+      "VLANIF缺少IP"
+    ],
+    "troubleshooting": [
+      "display vlan",
+      "display ip interface brief"
+    ],
+    "related_commands": [
+      "ip address",
+      "vlan"
+    ]
+  },
+  {
+    "id": "IP004",
+    "command": "display ip interface brief",
+    "module": "IP",
+    "syntax": "display ip interface brief",
+    "description": "查看三层接口IP地址及接口状态摘要。",
+    "parameters": [],
+    "scenes": "检查IP配置、接口状态和VLANIF网关。",
+    "example": "display ip interface brief",
+    "errors": [
+      "IP配置存在但接口Down",
+      "地址配置在错误接口"
+    ],
+    "troubleshooting": [
+      "display interface",
+      "display vlan"
+    ],
+    "related_commands": [
+      "ip address",
+      "interface Vlan-interface"
+    ]
+  },
+  {
+    "id": "IP005",
+    "command": "ip route-static",
+    "module": "IP",
+    "syntax": "ip route-static destination mask next-hop",
+    "description": "配置IPv4静态路由。",
+    "parameters": [
+      {
+        "name": "destination",
+        "description": "目标网络。"
+      },
+      {
+        "name": "mask",
+        "description": "目标网络掩码。"
+      },
+      {
+        "name": "next-hop",
+        "description": "下一跳地址。"
+      }
+    ],
+    "scenes": "配置不同网段之间的静态路由。",
+    "example": "ip route-static 0.0.0.0 0.0.0.0 192.168.10.254",
+    "errors": [
+      "下一跳不可达",
+      "掩码错误",
+      "路由方向错误"
+    ],
+    "troubleshooting": [
+      "display ip routing-table",
+      "ping"
+    ],
+    "related_commands": [
+      "display ip routing-table",
+      "ping"
+    ]
+  },
+  {
+    "id": "IP006",
+    "command": "display ip routing-table",
+    "module": "IP",
+    "syntax": "display ip routing-table",
+    "description": "查看设备当前IP路由表。",
+    "parameters": [],
+    "scenes": "确认直连、静态和动态路由是否存在。",
+    "example": "display ip routing-table",
+    "errors": [
+      "目标路由不存在",
+      "存在错误的更优路由"
+    ],
+    "troubleshooting": [
+      "ping",
+      "display ip interface brief"
+    ],
+    "related_commands": [
+      "ip route-static"
+    ]
+  },
+  {
+    "id": "IP007",
+    "command": "ping",
+    "module": "IP",
+    "syntax": "ping ip-address",
+    "description": "测试到目标IPv4地址的网络可达性。",
+    "parameters": [
+      {
+        "name": "ip-address",
+        "description": "目标IP地址。"
+      }
+    ],
+    "scenes": "连通性验证、网关和下一跳排错。",
+    "example": "ping 192.168.10.1",
+    "errors": [
+      "目标不可达",
+      "源接口选择不符合预期"
+    ],
+    "troubleshooting": [
+      "display ip routing-table",
+      "display arp"
+    ],
+    "related_commands": [
+      "display ip routing-table",
+      "display arp"
+    ]
+  },
+  {
+    "id": "IP008",
+    "command": "display arp",
+    "module": "IP",
+    "syntax": "display arp",
+    "description": "查看ARP缓存和IP与MAC地址映射。",
+    "parameters": [],
+    "scenes": "排查同网段通信、网关解析及ARP异常。",
+    "example": "display arp",
+    "errors": [
+      "ARP表无目标记录",
+      "地址映射异常"
+    ],
+    "troubleshooting": [
+      "ping",
+      "display ip interface brief"
+    ],
+    "related_commands": [
+      "ping",
+      "display ip interface brief"
+    ]
+  },
+  {
+    "id": "ACL001",
+    "command": "acl basic",
+    "module": "ACL",
+    "syntax": "acl basic <acl-number>",
+    "description": "创建基本IPv4 ACL，主要按源IPv4地址进行报文匹配。",
+    "parameters": [
+      {
+        "name": "acl-number",
+        "description": "基本ACL编号，常见范围为2000-2999，具体范围以设备版本为准。"
+      }
+    ],
+    "scenes": "限制某网段访问、基础源地址过滤。",
+    "example": "acl basic 2000\nrule 5 permit source 192.168.1.0 0.0.0.255",
+    "errors": [
+      "ACL编号或类型不符合当前版本要求",
+      "创建后没有配置rule"
+    ],
+    "troubleshooting": [
+      "display acl 2000",
+      "检查ACL是否被应用到接口"
+    ],
+    "related_commands": [
+      "rule",
+      "packet-filter",
+      "display acl"
+    ]
+  },
+  {
+    "id": "ACL002",
+    "command": "acl advanced",
+    "module": "ACL",
+    "syntax": "acl advanced <acl-number>",
+    "description": "创建高级IPv4 ACL，可同时匹配源地址、目的地址、协议及端口等条件。",
+    "parameters": [
+      {
+        "name": "acl-number",
+        "description": "高级ACL编号，常见范围为3000-3999，具体范围以设备版本为准。"
+      }
+    ],
+    "scenes": "精细控制不同主机、网段、协议和业务端口。",
+    "example": "acl advanced 3000\nrule 5 permit ip source 192.168.1.0 0.0.0.255 destination 10.0.0.0 0.0.0.255",
+    "errors": [
+      "源/目的地址通配符写错",
+      "协议或端口参数不匹配版本语法"
+    ],
+    "troubleshooting": [
+      "display acl 3000",
+      "检查规则顺序和匹配条件"
+    ],
+    "related_commands": [
+      "rule",
+      "packet-filter",
+      "display acl"
+    ]
+  },
+  {
+    "id": "ACL003",
+    "command": "rule",
+    "module": "ACL",
+    "syntax": "rule <rule-id> {permit|deny} ...",
+    "description": "在ACL中创建一条匹配与动作规则。",
+    "parameters": [
+      {
+        "name": "rule-id",
+        "description": "规则编号。"
+      },
+      {
+        "name": "permit/deny",
+        "description": "允许或拒绝匹配报文。"
+      }
+    ],
+    "scenes": "定义ACL具体访问控制策略。",
+    "example": "rule 5 permit source 192.168.1.0 0.0.0.255",
+    "errors": [
+      "规则编号重复",
+      "规则条件书写错误",
+      "规则顺序导致前一条先匹配"
+    ],
+    "troubleshooting": [
+      "display acl <acl-number>",
+      "核对规则顺序、源/目的地址和动作"
+    ],
+    "related_commands": [
+      "acl basic",
+      "acl advanced",
+      "permit",
+      "deny"
+    ]
+  },
+  {
+    "id": "ACL004",
+    "command": "permit",
+    "module": "ACL",
+    "syntax": "rule <rule-id> permit ...",
+    "description": "允许满足当前规则匹配条件的报文通过。",
+    "parameters": [
+      {
+        "name": "rule-id",
+        "description": "规则编号。"
+      }
+    ],
+    "scenes": "白名单、允许特定网段或业务流量。",
+    "example": "rule 5 permit ip source 192.168.1.0 0.0.0.255 destination 10.0.0.0 0.0.0.255",
+    "errors": [
+      "permit规则条件过宽",
+      "放行规则位置错误"
+    ],
+    "troubleshooting": [
+      "display acl",
+      "确认命中规则和应用方向"
+    ],
+    "related_commands": [
+      "rule",
+      "deny",
+      "packet-filter"
+    ]
+  },
+  {
+    "id": "ACL005",
+    "command": "deny",
+    "module": "ACL",
+    "syntax": "rule <rule-id> deny ...",
+    "description": "拒绝满足当前规则匹配条件的报文。",
+    "parameters": [
+      {
+        "name": "rule-id",
+        "description": "规则编号。"
+      }
+    ],
+    "scenes": "阻断特定网段、主机或业务流量。",
+    "example": "rule 10 deny ip source 192.168.2.0 0.0.0.255 destination 10.0.0.0 0.0.0.255",
+    "errors": [
+      "deny规则过早匹配",
+      "误封正常业务"
+    ],
+    "troubleshooting": [
+      "检查规则顺序",
+      "确认ACL应用方向"
+    ],
+    "related_commands": [
+      "rule",
+      "permit",
+      "packet-filter"
+    ]
+  },
+  {
+    "id": "ACL006",
+    "command": "packet-filter",
+    "module": "ACL",
+    "syntax": "packet-filter <acl-number> {inbound|outbound}",
+    "description": "将ACL应用到接口的入方向或出方向，对经过接口的报文执行过滤。具体命令形式可能随Comware版本和产品系列变化。",
+    "parameters": [
+      {
+        "name": "acl-number",
+        "description": "要应用的ACL编号。"
+      },
+      {
+        "name": "inbound/outbound",
+        "description": "入方向或出方向。"
+      }
+    ],
+    "scenes": "把已经创建的ACL真正应用到接口。",
+    "example": "interface GigabitEthernet1/0/1\npacket-filter 3000 inbound",
+    "errors": [
+      "ACL未应用",
+      "方向配置反了",
+      "设备版本使用不同的应用命令"
+    ],
+    "troubleshooting": [
+      "display current-configuration interface GigabitEthernet1/0/1",
+      "display acl 3000",
+      "确认当前设备版本命令格式"
+    ],
+    "related_commands": [
+      "acl advanced",
+      "display acl"
+    ]
+  },
+  {
+    "id": "ACL007",
+    "command": "display acl",
+    "module": "ACL",
+    "syntax": "display acl [acl-number]",
+    "description": "查看ACL及其规则、匹配统计等信息。",
+    "parameters": [
+      {
+        "name": "acl-number",
+        "description": "可选，指定ACL编号。"
+      }
+    ],
+    "scenes": "ACL配置检查和故障排查。",
+    "example": "display acl 3000",
+    "errors": [
+      "查看的ACL编号不存在",
+      "规则统计与预期不符"
+    ],
+    "troubleshooting": [
+      "检查ACL是否存在",
+      "检查规则顺序和命中统计"
+    ],
+    "related_commands": [
+      "acl basic",
+      "acl advanced",
+      "rule",
+      "packet-filter"
+    ]
+  },
+  {
+    "id": "OSPF001",
+    "command": "ospf",
+    "module": "OSPF",
+    "syntax": "ospf <process-id> [router-id <router-id>]",
+    "description": "创建OSPF路由进程并进入OSPF视图。",
+    "parameters": [
+      {
+        "name": "process-id",
+        "description": "OSPF进程号。"
+      },
+      {
+        "name": "router-id",
+        "description": "OSPF Router ID，通常使用稳定且唯一的IPv4地址。"
+      }
+    ],
+    "scenes": "配置OSPF动态路由。",
+    "example": "ospf 1 router-id 1.1.1.1",
+    "errors": [
+      "Router ID重复",
+      "进程号配置与现有策略不一致"
+    ],
+    "troubleshooting": [
+      "display ospf peer",
+      "display ospf routing",
+      "检查Router ID唯一性"
+    ],
+    "related_commands": [
+      "router-id",
+      "area",
+      "network",
+      "display ospf peer"
+    ]
+  },
+  {
+    "id": "OSPF002",
+    "command": "router-id",
+    "module": "OSPF",
+    "syntax": "router-id <router-id>",
+    "description": "为OSPF进程指定Router ID，用于标识OSPF设备。",
+    "parameters": [
+      {
+        "name": "router-id",
+        "description": "32位IPv4格式标识。"
+      }
+    ],
+    "scenes": "多设备OSPF组网时确保邻居标识唯一。",
+    "example": "ospf 1\nrouter-id 1.1.1.1",
+    "errors": [
+      "Router ID与邻居重复",
+      "修改后未按设备版本要求重新建立邻接"
+    ],
+    "troubleshooting": [
+      "display ospf peer",
+      "检查其他设备Router ID"
+    ],
+    "related_commands": [
+      "ospf",
+      "display ospf peer"
+    ]
+  },
+  {
+    "id": "OSPF003",
+    "command": "area",
+    "module": "OSPF",
+    "syntax": "area <area-id>",
+    "description": "进入指定OSPF区域视图。",
+    "parameters": [
+      {
+        "name": "area-id",
+        "description": "OSPF区域ID，常见骨干区域为0或0.0.0.0。"
+      }
+    ],
+    "scenes": "划分OSPF区域并配置区域内网络。",
+    "example": "ospf 1\narea 0",
+    "errors": [
+      "两端接口处于不同区域",
+      "区域规划错误"
+    ],
+    "troubleshooting": [
+      "检查两端OSPF接口所属area",
+      "display ospf peer"
+    ],
+    "related_commands": [
+      "ospf",
+      "network"
+    ]
+  },
+  {
+    "id": "OSPF004",
+    "command": "network",
+    "module": "OSPF",
+    "syntax": "network <ip-address> <wildcard-mask>",
+    "description": "在当前OSPF区域中声明匹配的接口网段，并启用OSPF。",
+    "parameters": [
+      {
+        "name": "ip-address",
+        "description": "匹配网络地址。"
+      },
+      {
+        "name": "wildcard-mask",
+        "description": "通配符掩码，例如255.255.255.0对应0.0.0.255。"
+      }
+    ],
+    "scenes": "让接口加入OSPF并建立邻居、发布网段。",
+    "example": "area 0\nnetwork 10.0.0.0 0.0.0.3",
+    "errors": [
+      "通配符掩码错误",
+      "network没有匹配到目标接口",
+      "两端接口不在同一区域"
+    ],
+    "troubleshooting": [
+      "display ip interface brief",
+      "display ospf peer",
+      "核对network与接口IP"
+    ],
+    "related_commands": [
+      "area",
+      "display ospf peer",
+      "display ospf routing"
+    ]
+  },
+  {
+    "id": "OSPF005",
+    "command": "silent-interface",
+    "module": "OSPF",
+    "syntax": "silent-interface <interface-type> <interface-number>",
+    "description": "使指定接口不发送OSPF Hello，但通常仍可发布该接口网段；具体行为以设备版本为准。",
+    "parameters": [
+      {
+        "name": "interface",
+        "description": "需要静默的接口。"
+      }
+    ],
+    "scenes": "用户网段只发布路由、不希望与终端侧建立OSPF邻居。",
+    "example": "ospf 1\nsilent-interface GigabitEthernet1/0/10",
+    "errors": [
+      "误把连接OSPF邻居的接口设置为silent"
+    ],
+    "troubleshooting": [
+      "display ospf peer",
+      "检查OSPF接口配置"
+    ],
+    "related_commands": [
+      "network",
+      "display ospf peer"
+    ]
+  },
+  {
+    "id": "OSPF006",
+    "command": "default-route-advertise",
+    "module": "OSPF",
+    "syntax": "default-route-advertise [always]",
+    "description": "在OSPF中发布默认路由，具体参数和是否要求本地存在默认路由取决于Comware版本及配置方式。",
+    "parameters": [
+      {
+        "name": "always",
+        "description": "常用于即使本地没有默认路由也发布默认路由的场景，具体支持情况以版本为准。"
+      }
+    ],
+    "scenes": "出口设备向OSPF内部发布默认路由。",
+    "example": "ospf 1\ndefault-route-advertise",
+    "errors": [
+      "没有预期发布默认路由",
+      "误向不需要的区域发布默认路由"
+    ],
+    "troubleshooting": [
+      "display ospf routing",
+      "display ip routing-table",
+      "检查默认路由来源"
+    ],
+    "related_commands": [
+      "ospf",
+      "display ospf routing"
+    ]
+  },
+  {
+    "id": "OSPF007",
+    "command": "display ospf peer",
+    "module": "OSPF",
+    "syntax": "display ospf peer",
+    "description": "查看OSPF邻居状态、邻居ID、接口及邻接状态。",
+    "parameters": [],
+    "scenes": "排查OSPF邻居无法建立、频繁Down等问题。",
+    "example": "display ospf peer",
+    "errors": [
+      "邻居停留在非Full状态",
+      "没有发现邻居"
+    ],
+    "troubleshooting": [
+      "检查接口IP和掩码",
+      "检查area、认证、Hello/Dead参数及网络类型",
+      "检查ACL或安全策略"
+    ],
+    "related_commands": [
+      "ospf",
+      "network",
+      "display ospf routing"
+    ]
+  },
+  {
+    "id": "OSPF008",
+    "command": "display ospf routing",
+    "module": "OSPF",
+    "syntax": "display ospf routing",
+    "description": "查看OSPF学习和计算得到的路由信息。",
+    "parameters": [],
+    "scenes": "确认OSPF是否正确学习目标网络。",
+    "example": "display ospf routing",
+    "errors": [
+      "目标路由没有出现",
+      "下一跳或出接口异常"
+    ],
+    "troubleshooting": [
+      "先检查display ospf peer",
+      "再检查LSDB和接口网络发布情况",
+      "检查路由表"
+    ],
+    "related_commands": [
+      "display ospf peer",
+      "display ip routing-table"
+    ]
+  },
+  {
+    "id": "RT001",
+    "command": "ip route-static",
+    "module": "Static Route",
+    "syntax": "ip route-static <destination> <mask> <next-hop>",
+    "description": "配置IPv4静态路由，指定目标网络、掩码和下一跳地址。",
+    "parameters": [
+      {
+        "name": "destination",
+        "description": "目标网络地址。"
+      },
+      {
+        "name": "mask",
+        "description": "目标网络掩码。"
+      },
+      {
+        "name": "next-hop",
+        "description": "下一跳IPv4地址。"
+      }
+    ],
+    "scenes": "小型网络、固定出口、特定目标网络或动态路由备份。",
+    "example": "ip route-static 192.168.20.0 255.255.255.0 10.0.0.2",
+    "errors": [
+      "目标网段/掩码错误",
+      "下一跳不可达",
+      "路由优先级导致未选中"
+    ],
+    "troubleshooting": [
+      "display ip routing-table",
+      "ping 10.0.0.2",
+      "检查下一跳所在接口状态"
+    ],
+    "related_commands": [
+      "display ip routing-table",
+      "ip route-static"
+    ]
+  },
+  {
+    "id": "RT002",
+    "command": "ip route-static default",
+    "module": "Static Route",
+    "syntax": "ip route-static 0.0.0.0 0.0.0.0 <next-hop>",
+    "description": "配置IPv4默认静态路由，将未知目的流量转发到指定下一跳。",
+    "parameters": [
+      {
+        "name": "next-hop",
+        "description": "默认出口下一跳地址。"
+      }
+    ],
+    "scenes": "终端网络访问上级路由器或互联网出口。",
+    "example": "ip route-static 0.0.0.0 0.0.0.0 10.0.0.1",
+    "errors": [
+      "默认路由下一跳不可达",
+      "多个默认路由优先级不符合预期"
+    ],
+    "troubleshooting": [
+      "display ip routing-table",
+      "ping 10.0.0.1",
+      "检查出口接口"
+    ],
+    "related_commands": [
+      "ip route-static",
+      "display ip routing-table"
+    ]
+  },
+  {
+    "id": "RT003",
+    "command": "display ip routing-table",
+    "module": "Static Route",
+    "syntax": "display ip routing-table [verbose]",
+    "description": "查看IPv4路由表，确认静态、直连、OSPF等路由是否存在及当前选路结果。",
+    "parameters": [
+      {
+        "name": "verbose",
+        "description": "可选，查看更详细的路由信息，具体支持情况以版本为准。"
+      }
+    ],
+    "scenes": "静态路由和动态路由选路排障。",
+    "example": "display ip routing-table",
+    "errors": [
+      "目标路由不存在",
+      "存在路由但未成为最佳路由"
+    ],
+    "troubleshooting": [
+      "检查Destination/Mask、Proto、NextHop、Interface和Preference",
+      "检查下一跳可达性"
+    ],
+    "related_commands": [
+      "ip route-static",
+      "display ospf routing"
+    ]
+  },
+  {
+    "id": "RT004",
+    "command": "ip route-static preference",
+    "module": "Static Route",
+    "syntax": "ip route-static <destination> <mask> <next-hop> preference <value>",
+    "description": "为静态路由设置路由优先级，可用于主备静态路由等场景。具体参数位置和范围可能因Comware版本不同而变化。",
+    "parameters": [
+      {
+        "name": "value",
+        "description": "静态路由优先级值。数值越小通常优先级越高。"
+      }
+    ],
+    "scenes": "浮动静态路由、链路备份。",
+    "example": "ip route-static 192.168.20.0 255.255.255.0 10.0.0.2 preference 80",
+    "errors": [
+      "主备优先级设置反了",
+      "备用路由被意外选中"
+    ],
+    "troubleshooting": [
+      "display ip routing-table",
+      "比较不同候选路由Preference"
+    ],
+    "related_commands": [
+      "ip route-static",
+      "display ip routing-table"
+    ]
+  },
+  {
+    "id": "DHCP001",
+    "command": "dhcp enable",
+    "module": "DHCP",
+    "syntax": "dhcp enable",
+    "description": "开启设备的 DHCP 功能，为 DHCP 相关服务提供基础能力。",
+    "parameters": [],
+    "scenes": "需要在设备上启用 DHCP 服务或相关 DHCP 功能时使用。",
+    "example": "system-view\ndhcp enable",
+    "errors": [
+      "未开启 DHCP 功能导致相关 DHCP 服务无法正常工作"
+    ],
+    "troubleshooting": [
+      "display current-configuration | include dhcp",
+      "display dhcp server statistics"
+    ],
+    "related_commands": [
+      "dhcp server ip-pool",
+      "dhcp server forbidden-ip",
+      "dhcp select server"
+    ]
+  },
+  {
+    "id": "DHCP002",
+    "command": "dhcp server ip-pool",
+    "module": "DHCP",
+    "syntax": "dhcp server ip-pool <pool-name>",
+    "description": "创建 DHCP 地址池。",
+    "parameters": [
+      "pool-name：地址池名称"
+    ],
+    "scenes": "为客户端自动分配 IP 地址时使用。",
+    "example": "dhcp enable\ndhcp server ip-pool VLAN10\n network 192.168.10.0 mask 255.255.255.0\n gateway-list 192.168.10.1\n dns-list 8.8.8.8",
+    "errors": [
+      "地址池网段与网关不匹配",
+      "地址池未配置可分配地址范围"
+    ],
+    "troubleshooting": [
+      "display dhcp server ip-pool",
+      "display dhcp server ip-in-use"
+    ],
+    "related_commands": [
+      "network",
+      "gateway-list",
+      "dns-list"
+    ]
+  },
+  {
+    "id": "DHCP003",
+    "command": "network",
+    "module": "DHCP",
+    "syntax": "network <network-address> mask <mask>",
+    "description": "在 DHCP 地址池中指定可分配地址所属网段。",
+    "parameters": [
+      "network-address：网段地址",
+      "mask：子网掩码"
+    ],
+    "scenes": "DHCP 地址池配置。",
+    "example": "network 192.168.10.0 mask 255.255.255.0",
+    "errors": [
+      "网段与接口地址不在同一逻辑网络",
+      "掩码配置错误"
+    ],
+    "troubleshooting": [
+      "display dhcp server ip-pool"
+    ],
+    "related_commands": [
+      "gateway-list",
+      "dhcp server ip-pool"
+    ]
+  },
+  {
+    "id": "DHCP004",
+    "command": "gateway-list",
+    "module": "DHCP",
+    "syntax": "gateway-list <gateway-address>",
+    "description": "指定 DHCP 客户端使用的默认网关。",
+    "parameters": [
+      "gateway-address：默认网关"
+    ],
+    "scenes": "客户端需要通过三层网关访问其他网络时使用。",
+    "example": "gateway-list 192.168.10.1",
+    "errors": [
+      "网关不属于地址池网段",
+      "网关地址与接口实际地址不一致"
+    ],
+    "troubleshooting": [
+      "display ip interface brief",
+      "display dhcp server ip-pool"
+    ],
+    "related_commands": [
+      "network",
+      "dns-list"
+    ]
+  },
+  {
+    "id": "DHCP005",
+    "command": "dns-list",
+    "module": "DHCP",
+    "syntax": "dns-list <dns-address>",
+    "description": "向 DHCP 客户端下发 DNS 服务器地址。",
+    "parameters": [
+      "dns-address：DNS 服务器地址"
+    ],
+    "scenes": "希望客户端自动获得 DNS 配置时使用。",
+    "example": "dns-list 8.8.8.8",
+    "errors": [
+      "DNS 地址不可达或配置错误"
+    ],
+    "troubleshooting": [
+      "display current-configuration | include dns-list"
+    ],
+    "related_commands": [
+      "gateway-list"
+    ]
+  },
+  {
+    "id": "NAT001",
+    "command": "nat outbound",
+    "module": "NAT",
+    "syntax": "nat outbound",
+    "description": "在接口上配置 NAT 出方向转换，使内部私网地址可以通过公网接口访问外部网络。",
+    "parameters": [],
+    "scenes": "企业内网通过公网出口访问 Internet 的常见场景。",
+    "example": "acl basic 2000\n rule 5 permit source 192.168.10.0 0.0.0.255\ninterface GigabitEthernet1/0/24\n nat outbound 2000",
+    "errors": [
+      "ACL 未匹配内网地址",
+      "NAT 未配置在正确的出接口",
+      "公网接口没有有效地址"
+    ],
+    "troubleshooting": [
+      "display nat outbound",
+      "display nat session",
+      "display ip routing-table"
+    ],
+    "related_commands": [
+      "acl basic",
+      "display nat session"
+    ]
+  },
+  {
+    "id": "NAT002",
+    "command": "nat server",
+    "module": "NAT",
+    "syntax": "nat server protocol <protocol> global <global-address> <global-port> inside <inside-address> <inside-port>",
+    "description": "配置 NAT Server，将公网地址和端口映射到内部服务器。",
+    "parameters": [
+      "protocol：协议",
+      "global-address：公网地址",
+      "inside-address：内网服务器地址",
+      "端口：服务端口"
+    ],
+    "scenes": "发布内网 Web、FTP 等服务器到公网时使用。",
+    "example": "interface GigabitEthernet1/0/24\n nat server protocol tcp global 202.100.1.10 80 inside 192.168.10.100 80",
+    "errors": [
+      "公网映射地址错误",
+      "内部服务器不可达",
+      "端口映射错误"
+    ],
+    "troubleshooting": [
+      "display nat server",
+      "display nat session",
+      "display ip routing-table"
+    ],
+    "related_commands": [
+      "nat outbound"
+    ]
+  },
+  {
+    "id": "NAT003",
+    "command": "display nat session",
+    "module": "NAT",
+    "syntax": "display nat session",
+    "description": "查看当前 NAT 会话，用于确认地址转换是否实际发生。",
+    "parameters": [],
+    "scenes": "排查内网访问公网、端口映射等 NAT 问题。",
+    "example": "display nat session",
+    "errors": [
+      "没有会话通常需要继续检查 ACL、路由和 NAT 配置"
+    ],
+    "troubleshooting": [
+      "display nat session",
+      "display ip routing-table",
+      "display acl"
+    ],
+    "related_commands": [
+      "nat outbound",
+      "nat server"
+    ]
+  },
+  {
+    "id": "STP001",
+    "command": "stp enable",
+    "module": "STP",
+    "syntax": "stp enable",
+    "description": "开启生成树协议功能，用于避免二层环路。",
+    "parameters": [],
+    "scenes": "交换网络存在冗余链路，需要防止二层环路时使用。",
+    "example": "system-view\nstp enable",
+    "errors": [
+      "未开启 STP 导致二层环路风险",
+      "部分设备或端口模式不支持预期 STP 行为"
+    ],
+    "troubleshooting": [
+      "display stp",
+      "display stp brief"
+    ],
+    "related_commands": [
+      "stp mode",
+      "stp root primary",
+      "stp edged-port"
+    ]
+  },
+  {
+    "id": "STP002",
+    "command": "stp mode",
+    "module": "STP",
+    "syntax": "stp mode <mode>",
+    "description": "设置生成树工作模式，如 STP、RSTP 或 MSTP（具体支持取决于设备版本）。",
+    "parameters": [
+      "mode：生成树模式"
+    ],
+    "scenes": "需要选择不同生成树协议模式时使用。",
+    "example": "stp mode rstp",
+    "errors": [
+      "模式与设备版本支持情况不一致",
+      "网络设备生成树模式规划不统一"
+    ],
+    "troubleshooting": [
+      "display stp"
+    ],
+    "related_commands": [
+      "stp enable",
+      "stp region-configuration"
+    ]
+  },
+  {
+    "id": "STP003",
+    "command": "stp root primary",
+    "module": "STP",
+    "syntax": "stp root primary",
+    "description": "将设备配置为生成树根桥候选设备，降低手工修改桥优先级的复杂度。",
+    "parameters": [],
+    "scenes": "核心或汇聚交换机需要承担根桥角色时使用。",
+    "example": "system-view\nstp root primary",
+    "errors": [
+      "根桥规划不合理",
+      "多台设备同时作为根桥可能导致拓扑不符合设计"
+    ],
+    "troubleshooting": [
+      "display stp brief",
+      "display stp"
+    ],
+    "related_commands": [
+      "stp root secondary",
+      "stp priority"
+    ]
+  },
+  {
+    "id": "STP004",
+    "command": "stp edged-port",
+    "module": "STP",
+    "syntax": "stp edged-port enable",
+    "description": "将接入终端的端口配置为边缘端口，使终端端口更快进入转发状态。",
+    "parameters": [],
+    "scenes": "PC、服务器等终端接入口通常可使用。不要随意用于交换机互联端口。",
+    "example": "interface GigabitEthernet1/0/1\n stp edged-port enable",
+    "errors": [
+      "交换机互联端口错误配置为边缘端口",
+      "可能增加环路风险"
+    ],
+    "troubleshooting": [
+      "display stp interface GigabitEthernet1/0/1"
+    ],
+    "related_commands": [
+      "stp enable"
+    ]
+  },
+  {
+    "id": "LAG001",
+    "command": "link-aggregation group",
+    "module": "Link Aggregation",
+    "syntax": "link-aggregation group <group-id> mode <mode>",
+    "description": "创建或指定链路聚合组，用于将多个物理链路组成逻辑链路，提高带宽和可靠性。",
+    "parameters": [
+      "group-id：聚合组编号",
+      "mode：聚合模式，具体取值依设备版本"
+    ],
+    "scenes": "交换机之间或交换机与服务器之间需要链路冗余和带宽叠加时使用。",
+    "example": "interface Bridge-Aggregation 1\n link-aggregation mode dynamic",
+    "errors": [
+      "两端聚合模式不匹配",
+      "成员接口配置不一致"
+    ],
+    "troubleshooting": [
+      "display link-aggregation verbose",
+      "display link-aggregation summary"
+    ],
+    "related_commands": [
+      "port link-aggregation group",
+      "display link-aggregation verbose"
+    ]
+  },
+  {
+    "id": "LAG002",
+    "command": "port link-aggregation group",
+    "module": "Link Aggregation",
+    "syntax": "port link-aggregation group <group-id>",
+    "description": "将物理接口加入指定链路聚合组。",
+    "parameters": [
+      "group-id：聚合组编号"
+    ],
+    "scenes": "配置聚合成员端口时使用。",
+    "example": "interface GigabitEthernet1/0/1\n port link-aggregation group 1",
+    "errors": [
+      "成员接口属性不一致",
+      "成员端口属于其他聚合组",
+      "速率或双工等物理条件不满足"
+    ],
+    "troubleshooting": [
+      "display link-aggregation verbose",
+      "display interface GigabitEthernet1/0/1"
+    ],
+    "related_commands": [
+      "link-aggregation group",
+      "display link-aggregation summary"
+    ]
+  },
+  {
+    "id": "LAG003",
+    "command": "display link-aggregation summary",
+    "module": "Link Aggregation",
+    "syntax": "display link-aggregation summary",
+    "description": "查看链路聚合组摘要信息和成员状态。",
+    "parameters": [],
+    "scenes": "快速检查聚合组是否建立、成员是否正常。",
+    "example": "display link-aggregation summary",
+    "errors": [
+      "成员端口未 Selected",
+      "聚合组未建立"
+    ],
+    "troubleshooting": [
+      "display link-aggregation verbose",
+      "display interface"
+    ],
+    "related_commands": [
+      "display link-aggregation verbose"
+    ]
+  },
+  {
+    "id": "LAG004",
+    "command": "display link-aggregation verbose",
+    "module": "Link Aggregation",
+    "syntax": "display link-aggregation verbose",
+    "description": "详细查看链路聚合组、成员接口及选中状态。",
+    "parameters": [],
+    "scenes": "排查链路聚合成员不转发、聚合不成功等问题。",
+    "example": "display link-aggregation verbose",
+    "errors": [
+      "成员端口状态异常",
+      "LACP 参数不匹配"
+    ],
+    "troubleshooting": [
+      "display interface",
+      "display current-configuration interface"
+    ],
+    "related_commands": [
+      "display link-aggregation summary"
+    ]
+  },
+  {
+    "id": "QOS001",
+    "command": "qos",
+    "module": "QoS",
+    "syntax": "qos",
+    "description": "进入 QoS 相关配置环境或配置 QoS 功能的基础命令，具体语法随 Comware 版本和特性变化。",
+    "parameters": [],
+    "scenes": "需要对流量进行分类、标记、限速或队列调度时使用。",
+    "example": "system-view\nqos",
+    "errors": [
+      "设备版本不支持对应 QoS 特性",
+      "QoS 配置位置错误"
+    ],
+    "troubleshooting": [
+      "display qos policy",
+      "display traffic classifier"
+    ],
+    "related_commands": [
+      "traffic classifier",
+      "traffic behavior",
+      "qos policy"
+    ]
+  },
+  {
+    "id": "QOS002",
+    "command": "traffic classifier",
+    "module": "QoS",
+    "syntax": "traffic classifier <name>",
+    "description": "创建流量分类器，用于定义需要进行 QoS 处理的流量特征。",
+    "parameters": [
+      "name：分类器名称"
+    ],
+    "scenes": "需要根据源/目的地址、协议、端口等条件识别流量时使用。",
+    "example": "traffic classifier WEB\n if-match protocol tcp",
+    "errors": [
+      "匹配条件配置错误",
+      "分类器未被 QoS 策略引用"
+    ],
+    "troubleshooting": [
+      "display traffic classifier user-defined"
+    ],
+    "related_commands": [
+      "traffic behavior",
+      "qos policy"
+    ]
+  },
+  {
+    "id": "QOS003",
+    "command": "traffic behavior",
+    "module": "QoS",
+    "syntax": "traffic behavior <name>",
+    "description": "创建流量行为，用于定义限速、重标记等处理动作。",
+    "parameters": [
+      "name：行为名称"
+    ],
+    "scenes": "需要对匹配到的流量执行具体 QoS 动作时使用。",
+    "example": "traffic behavior LIMIT-WEB\n car cir 1000",
+    "errors": [
+      "行为没有动作",
+      "参数不符合设备版本支持范围"
+    ],
+    "troubleshooting": [
+      "display traffic behavior user-defined"
+    ],
+    "related_commands": [
+      "traffic classifier",
+      "qos policy"
+    ]
+  },
+  {
+    "id": "QOS004",
+    "command": "qos policy",
+    "module": "QoS",
+    "syntax": "qos policy <name>",
+    "description": "创建 QoS 策略，将流量分类器与流量行为关联。",
+    "parameters": [
+      "name：策略名称"
+    ],
+    "scenes": "完成 QoS 分类和处理动作关联时使用。",
+    "example": "qos policy WEB-POLICY\n classifier WEB behavior LIMIT-WEB",
+    "errors": [
+      "classifier 与 behavior 未正确关联",
+      "策略未应用到接口"
+    ],
+    "troubleshooting": [
+      "display qos policy user-defined",
+      "display current-configuration interface"
+    ],
+    "related_commands": [
+      "traffic classifier",
+      "traffic behavior"
+    ]
+  },
+  {
+    "id": "AAA001",
+    "command": "domain",
+    "module": "AAA",
+    "syntax": "domain <domain-name>",
+    "description": "创建认证域，用于组织 AAA 用户认证、授权和计费相关配置。",
+    "parameters": [
+      "domain-name：认证域名称"
+    ],
+    "scenes": "需要区分不同用户认证策略或认证服务器时使用。",
+    "example": "domain admin",
+    "errors": [
+      "认证域不存在",
+      "域配置与 AAA 策略不匹配"
+    ],
+    "troubleshooting": [
+      "display domain"
+    ],
+    "related_commands": [
+      "local-user",
+      "authentication-mode"
+    ]
+  },
+  {
+    "id": "AAA002",
+    "command": "local-user",
+    "module": "AAA",
+    "syntax": "local-user <username>",
+    "description": "创建本地认证用户。",
+    "parameters": [
+      "username：用户名"
+    ],
+    "scenes": "设备本地登录认证、SSH 管理等场景。",
+    "example": "local-user admin\n password hash <password>\n service-type ssh",
+    "errors": [
+      "用户未配置服务类型",
+      "密码配置方式与版本不匹配"
+    ],
+    "troubleshooting": [
+      "display local-user"
+    ],
+    "related_commands": [
+      "service-type",
+      "authorization-attribute"
+    ]
+  },
+  {
+    "id": "AAA003",
+    "command": "service-type",
+    "module": "AAA",
+    "syntax": "service-type <type>",
+    "description": "指定本地用户可使用的服务类型，例如 SSH、Telnet 等，具体取值取决于版本。",
+    "parameters": [
+      "type：服务类型"
+    ],
+    "scenes": "限制本地用户可以通过哪种管理服务登录设备。",
+    "example": "local-user admin\n service-type ssh",
+    "errors": [
+      "服务类型未启用",
+      "用户服务类型与实际登录方式不一致"
+    ],
+    "troubleshooting": [
+      "display local-user"
+    ],
+    "related_commands": [
+      "local-user",
+      "ssh server enable"
+    ]
+  },
+  {
+    "id": "AAA004",
+    "command": "authorization-attribute user-role",
+    "module": "AAA",
+    "syntax": "authorization-attribute user-role <role>",
+    "description": "为本地用户指定用户角色或权限等级，具体角色名称依设备版本而定。",
+    "parameters": [
+      "role：用户角色"
+    ],
+    "scenes": "需要控制不同运维人员的设备操作权限时使用。",
+    "example": "local-user admin\n authorization-attribute user-role network-admin",
+    "errors": [
+      "角色名称错误",
+      "用户权限不足"
+    ],
+    "troubleshooting": [
+      "display local-user"
+    ],
+    "related_commands": [
+      "local-user"
+    ]
+  },
+  {
+    "id": "SSH001",
+    "command": "ssh server enable",
+    "module": "SSH",
+    "syntax": "ssh server enable",
+    "description": "开启设备 SSH Server 功能，为远程安全管理提供 SSH 服务。",
+    "parameters": [],
+    "scenes": "需要通过 SSH 远程管理设备时使用。",
+    "example": "system-view\nssh server enable",
+    "errors": [
+      "SSH 服务未开启",
+      "VTY 用户线未配置 SSH 认证方式"
+    ],
+    "troubleshooting": [
+      "display ssh server status",
+      "display current-configuration | include ssh"
+    ],
+    "related_commands": [
+      "ssh user",
+      "authentication-mode",
+      "protocol inbound ssh"
+    ]
+  },
+  {
+    "id": "SSH002",
+    "command": "ssh user",
+    "module": "SSH",
+    "syntax": "ssh user <username>",
+    "description": "创建或配置 SSH 用户相关属性。",
+    "parameters": [
+      "username：SSH 用户名"
+    ],
+    "scenes": "需要为 SSH 登录指定用户认证方式、服务类型等属性时使用。",
+    "example": "ssh user admin service-type stelnet authentication-type password",
+    "errors": [
+      "SSH 用户与本地用户不一致",
+      "认证类型配置错误"
+    ],
+    "troubleshooting": [
+      "display ssh user-information"
+    ],
+    "related_commands": [
+      "ssh server enable",
+      "local-user"
+    ]
+  },
+  {
+    "id": "SSH003",
+    "command": "protocol inbound ssh",
+    "module": "SSH",
+    "syntax": "protocol inbound ssh",
+    "description": "限制 VTY 用户线允许通过 SSH 协议进行远程登录。",
+    "parameters": [],
+    "scenes": "安全远程管理中建议仅开放 SSH 而不是明文 Telnet。",
+    "example": "line vty 0 4\n authentication-mode scheme\n protocol inbound ssh",
+    "errors": [
+      "VTY 未允许 SSH",
+      "认证方式未配置"
+    ],
+    "troubleshooting": [
+      "display current-configuration | include protocol inbound",
+      "display users"
+    ],
+    "related_commands": [
+      "authentication-mode",
+      "ssh server enable"
+    ]
+  },
+  {
+    "id": "SNMP001",
+    "command": "snmp-agent",
+    "module": "SNMP",
+    "syntax": "snmp-agent",
+    "description": "开启 SNMP Agent 功能，为网管系统提供设备监控接口。",
+    "parameters": [],
+    "scenes": "网络管理平台需要通过 SNMP 采集设备状态时使用。",
+    "example": "system-view\nsnmp-agent",
+    "errors": [
+      "SNMP Agent 未开启",
+      "网管服务器无法访问设备"
+    ],
+    "troubleshooting": [
+      "display snmp-agent sys-info",
+      "display snmp-agent statistics"
+    ],
+    "related_commands": [
+      "snmp-agent community",
+      "snmp-agent sys-info version"
+    ]
+  },
+  {
+    "id": "SNMP002",
+    "command": "snmp-agent community",
+    "module": "SNMP",
+    "syntax": "snmp-agent community read <community>",
+    "description": "配置 SNMP v1/v2c 社区字符串的访问权限；具体安全能力取决于版本。",
+    "parameters": [
+      "community：社区字符串"
+    ],
+    "scenes": "传统 SNMP v1/v2c 网管场景。生产环境应结合安全要求评估 SNMPv3。",
+    "example": "snmp-agent community read monitor",
+    "errors": [
+      "社区字符串不一致",
+      "ACL 限制导致网管无法访问"
+    ],
+    "troubleshooting": [
+      "display snmp-agent community",
+      "display snmp-agent statistics"
+    ],
+    "related_commands": [
+      "snmp-agent",
+      "snmp-agent sys-info version"
+    ]
+  },
+  {
+    "id": "SNMP003",
+    "command": "snmp-agent sys-info version",
+    "module": "SNMP",
+    "syntax": "snmp-agent sys-info version <version>",
+    "description": "指定 SNMP 协议版本。",
+    "parameters": [
+      "version：协议版本，具体取值取决于设备版本"
+    ],
+    "scenes": "统一设备与网管平台的 SNMP 协议版本。",
+    "example": "snmp-agent sys-info version v3",
+    "errors": [
+      "设备与网管版本不匹配",
+      "SNMPv3 安全参数未完整配置"
+    ],
+    "troubleshooting": [
+      "display snmp-agent sys-info"
+    ],
+    "related_commands": [
+      "snmp-agent",
+      "snmp-agent community"
+    ]
+  },
+  {
+    "id": "NTP001",
+    "command": "ntp-service enable",
+    "module": "NTP",
+    "syntax": "ntp-service enable",
+    "description": "开启 NTP 时间同步功能。",
+    "parameters": [],
+    "scenes": "需要让设备与统一时间服务器同步时使用。",
+    "example": "system-view\nntp-service enable",
+    "errors": [
+      "NTP 未开启",
+      "设备无法到达时间服务器"
+    ],
+    "troubleshooting": [
+      "display ntp-service status",
+      "display ntp-service sessions"
+    ],
+    "related_commands": [
+      "ntp-service unicast-server"
+    ]
+  },
+  {
+    "id": "NTP002",
+    "command": "ntp-service unicast-server",
+    "module": "NTP",
+    "syntax": "ntp-service unicast-server <server-address>",
+    "description": "指定 NTP 单播时间服务器。",
+    "parameters": [
+      "server-address：NTP 服务器地址"
+    ],
+    "scenes": "企业网络使用统一 NTP 服务器校准设备时间。",
+    "example": "ntp-service unicast-server 192.168.100.10",
+    "errors": [
+      "服务器地址不可达",
+      "UDP 123 被 ACL 或安全策略阻断"
+    ],
+    "troubleshooting": [
+      "display ntp-service status",
+      "display ntp-service sessions",
+      "display ip routing-table"
+    ],
+    "related_commands": [
+      "ntp-service enable"
+    ]
+  },
+  {
+    "id": "SYS001",
+    "command": "sysname",
+    "module": "System",
+    "syntax": "sysname <name>",
+    "description": "修改设备系统名称，便于识别设备。",
+    "parameters": [
+      "name：设备名称"
+    ],
+    "scenes": "设备上线、机房运维和批量管理时使用。",
+    "example": "sysname CORE-SW01",
+    "errors": [
+      "名称不符合设备规则"
+    ],
+    "troubleshooting": [
+      "display current-configuration | include sysname"
+    ],
+    "related_commands": [
+      "display version"
+    ]
+  },
+  {
+    "id": "SYS002",
+    "command": "interface",
+    "module": "System",
+    "syntax": "interface <interface-type> <interface-number>",
+    "description": "进入指定接口配置视图。",
+    "parameters": [
+      "interface-type：接口类型",
+      "interface-number：接口编号"
+    ],
+    "scenes": "配置物理接口、逻辑接口和三层接口。",
+    "example": "interface GigabitEthernet1/0/1",
+    "errors": [
+      "接口名称不存在",
+      "进入错误接口导致配置下发到错误端口"
+    ],
+    "troubleshooting": [
+      "display interface brief"
+    ],
+    "related_commands": [
+      "display current-configuration interface"
+    ]
+  },
+  {
+    "id": "SYS003",
+    "command": "save",
+    "module": "System",
+    "syntax": "save",
+    "description": "保存当前运行配置，使配置在设备重启后可以恢复。",
+    "parameters": [],
+    "scenes": "完成配置变更并确认无误后使用。",
+    "example": "save",
+    "errors": [
+      "只修改 running-config 未保存",
+      "保存过程中未确认或存储异常"
+    ],
+    "troubleshooting": [
+      "display saved-configuration",
+      "display current-configuration"
+    ],
+    "related_commands": [
+      "display saved-configuration"
+    ]
+  },
+  {
+    "id": "DISP001",
+    "command": "display current-configuration",
+    "module": "Display",
+    "syntax": "display current-configuration",
+    "description": "查看当前运行配置，是配置检查和故障排查的基础命令。",
+    "parameters": [],
+    "scenes": "检查设备当前配置、确认配置是否生效。",
+    "example": "display current-configuration",
+    "errors": [
+      "输出过长时需要结合过滤条件查询"
+    ],
+    "troubleshooting": [
+      "display current-configuration | include vlan",
+      "display current-configuration interface GigabitEthernet1/0/1"
+    ],
+    "related_commands": [
+      "display saved-configuration",
+      "save"
+    ]
+  },
+  {
+    "id": "DISP002",
+    "command": "display version",
+    "module": "Display",
+    "syntax": "display version",
+    "description": "查看设备型号、Comware 软件版本、启动时间等基础信息。",
+    "parameters": [],
+    "scenes": "确认设备平台和软件版本、排查版本差异时使用。",
+    "example": "display version",
+    "errors": [
+      "不同型号或版本支持的命令存在差异"
+    ],
+    "troubleshooting": [
+      "display version"
+    ],
+    "related_commands": [
+      "display device"
+    ]
+  },
+  {
+    "id": "DISP003",
+    "command": "display interface brief",
+    "module": "Display",
+    "syntax": "display interface brief",
+    "description": "快速查看接口物理状态和链路状态。",
+    "parameters": [],
+    "scenes": "排查接口 Down、链路异常、接口状态等问题。",
+    "example": "display interface brief",
+    "errors": [
+      "只看摘要无法定位具体故障原因"
+    ],
+    "troubleshooting": [
+      "display interface GigabitEthernet1/0/1",
+      "display transceiver diagnosis interface GigabitEthernet1/0/1"
+    ],
+    "related_commands": [
+      "display interface"
+    ]
+  },
+  {
+    "id": "DISP004",
+    "command": "display device",
+    "module": "Display",
+    "syntax": "display device",
+    "description": "查看设备硬件成员、槽位或设备状态信息，具体输出随平台变化。",
+    "parameters": [],
+    "scenes": "排查设备成员、硬件状态和框式设备槽位信息。",
+    "example": "display device",
+    "errors": [
+      "不同设备平台显示字段不同"
+    ],
+    "troubleshooting": [
+      "display device verbose"
+    ],
+    "related_commands": [
+      "display version"
+    ]
+  }
+]

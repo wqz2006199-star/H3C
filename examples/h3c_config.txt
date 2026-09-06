@@ -1,0 +1,23 @@
+system-view
+vlan 10
+vlan 20
+interface GigabitEthernet1/0/1
+port link-type access
+port access vlan 10
+quit
+interface GigabitEthernet1/0/2
+port link-type access
+port access vlan 20
+quit
+interface GigabitEthernet1/0/24
+port link-type trunk
+port trunk permit vlan 10 20
+quit
+interface Vlanif10
+ip address 192.168.10.1 255.255.255.0
+quit
+interface Vlanif20
+ip address 192.168.20.1 255.255.255.0
+quit
+ip route-static 0.0.0.0 0.0.0.0 192.168.10.254
+display current-configuration

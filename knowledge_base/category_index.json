@@ -1,0 +1,28 @@
+{
+  "total_commands": 80,
+  "modules": {
+    "VLAN": 6,
+    "Interface": 8,
+    "IP": 8,
+    "ACL": 7,
+    "OSPF": 8,
+    "Static Route": 4,
+    "DHCP": 5,
+    "NAT": 3,
+    "STP": 4,
+    "Link Aggregation": 4,
+    "QoS": 4,
+    "AAA": 4,
+    "SSH": 3,
+    "SNMP": 3,
+    "NTP": 2,
+    "System": 3,
+    "Display": 4
+  },
+  "packages": {
+    "V1.3-package-01": 22,
+    "V1.3-package-02": 19,
+    "V1.3-package-03": 16,
+    "V1.3-package-04": 23
+  }
+}
