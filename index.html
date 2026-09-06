@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>H3C 配置智能解析平台 V3.0</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Microsoft YaHei", Arial, sans-serif; background: #f0f4f8; color: #1e293b; }
+    .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); color: white; padding: 20px 6%; }
+    .header h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: 1px; }
+    .header p { margin: 0; color: #94a3b8; font-size: 14px; }
+    .container { width: 90%; max-width: 1200px; margin: 20px auto; }
+    .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(15,23,42,.07); }
+    .card h2 { margin: 0 0 14px; font-size: 16px; color: #1e3a5f; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+
+    /* 搜索区 */
+    .search-box { display: flex; gap: 8px; }
+    .search-box input { flex: 1; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; font-family: Consolas, monospace; transition: border-color .15s; }
+    .search-box input:focus { border-color: #2563eb; }
+    .search-box button { padding: 10px 20px; border: 0; border-radius: 8px; background: #2563eb; color: white; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .search-box button:hover { background: #1d4ed8; }
+    .search-hint { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+    #searchResults { margin-top: 12px; border: 1px solid #e2e8f0; border-radius: 8px; max-height: 320px; overflow-y: auto; display: none; }
+    #searchResults.show { display: block; }
+    .search-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background .1s; }
+    .search-item:hover { background: #f8fafc; }
+    .search-item:last-child { border-bottom: none; }
+    .search-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .search-cmd { font-family: Consolas, monospace; font-weight: 700; font-size: 13px; color: #0f172a; }
+    .search-cat { font-size: 11px; padding: 1px 6px; border-radius: 3px; background: #dbeafe; color: #1d4ed8; }
+    .search-match-type { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: #fef3c7; color: #92400e; }
+    .search-item-title { font-size: 13px; color: #475569; margin-bottom: 2px; }
+    .search-item-expr { font-size: 12px; color: #94a3b8; }
+    .search-empty { padding: 20px; text-align: center; color: #94a3b8; font-size: 13px; }
+    .search-count { font-size: 12px; color: #64748b; margin-top: 6px; }
+
+    /* 输入区 */
+    textarea { width: 100%; min-height: 180px; resize: vertical; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.6; outline: none; background: #f8fafc; }
+    textarea:focus { border-color: #2563eb; background: #fff; }
+    .btn-row { margin-top: 10px; display: flex; gap: 10px; align-items: center; }
+    button { padding: 9px 20px; border: 0; border-radius: 7px; font-size: 14px; cursor: pointer; font-weight: 600; transition: background .15s; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-secondary { background: #e2e8f0; color: #475569; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    #status { margin-top: 8px; font-size: 13px; color: #64748b; }
+    .error-text { color: #b91c1c !important; }
+    .success-text { color: #15803d !important; }
+
+    /* 标签页 */
+    .tabs { display: flex; gap: 0; margin-bottom: 0; }
+    .tab-btn { padding: 9px 18px; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; background: #f1f5f9; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 3px; transition: all .15s; }
+    .tab-btn:hover { background: #e2e8f0; }
+    .tab-btn.active { background: white; color: #1e3a5f; border-color: #e2e8f0; border-bottom: 1px solid white; position: relative; top: 1px; }
+    .tab-badge { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 10px; background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 700; }
+    .tab-badge.warn { background: #fef3c7; color: #92400e; }
+    .tab-badge.info { background: #dbeafe; color: #1d4ed8; }
+    .tab-content { display: none; padding-top: 4px; }
+    .tab-content.active { display: block; }
+
+    /* 搜索过滤 */
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+    .filter-bar input { flex: 1; min-width: 160px; padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; outline: none; font-family: Consolas, monospace; }
+    .filter-bar input:focus { border-color: #2563eb; }
+    .filter-bar .count { font-size: 12px; color: #94a3b8; }
+    .filter-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+    .filter-tag { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; transition: all .15s; }
+    .filter-tag:hover { background: #e2e8f0; }
+    .filter-tag.active { background: #2563eb; color: white; border-color: #2563eb; }
+    .filter-tag .cnt { margin-left: 4px; opacity: .7; }
+
+    /* 评分卡片 */
+    .score-card { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+    .score-circle { width: 90px; height: 90px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; border: 4px solid; }
+    .score-circle .s-num { font-size: 26px; font-weight: 800; line-height: 1; }
+    .score-circle .s-label { font-size: 10px; color: #64748b; margin-top: 2px; }
+    .score-excellent { border-color: #16a34a; background: #f0fdf4; } .score-excellent .s-num { color: #16a34a; }
+    .score-good { border-color: #2563eb; background: #eff6ff; } .score-good .s-num { color: #2563eb; }
+    .score-warn { border-color: #d97706; background: #fffbeb; } .score-warn .s-num { color: #d97706; }
+    .score-danger { border-color: #dc2626; background: #fef2f2; } .score-danger .s-num { color: #dc2626; }
+    .score-stats { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+    .stat-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-error { background: #dc2626; } .dot-warning { background: #d97706; } .dot-info { background: #2563eb; }
+
+    /* 错误分析 */
+    .error-card { border: 1px solid #fecaca; border-left: 4px solid #dc2626; border-radius: 8px; margin-bottom: 12px; overflow: hidden; background: #fff; }
+    .error-card.warn { border-left-color: #d97706; }
+    .error-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #fff7ed; cursor: pointer; user-select: none; transition: background .15s; }
+    .error-header:hover { background: #fff1e0; }
+    .error-cmd { font-family: Consolas, monospace; font-weight: 700; font-size: 13px; color: #991b1b; flex: 1; word-break: break-all; }
+    .error-card.warn .error-cmd { color: #92400e; }
+    .error-badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; flex-shrink: 0; }
+    .badge-error { background: #fee2e2; color: #991b1b; } .badge-warning { background: #fef3c7; color: #92400e; }
+    .error-arrow { color: #94a3b8; font-size: 11px; flex-shrink: 0; }
+    .error-body { display: none; padding: 12px 14px; border-top: 1px solid #fecaca; }
+    .error-body.open { display: block; }
+    .error-issue { margin-bottom: 10px; padding: 8px 10px; background: #fef2f2; border-radius: 6px; }
+    .error-card.warn .error-issue { background: #fffbeb; }
+    .error-issue-title { font-size: 13px; font-weight: 600; color: #7f1d1d; margin-bottom: 4px; }
+    .error-card.warn .error-issue-title { color: #78350f; }
+    .error-issue-mod { font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
+    .error-sug { font-size: 13px; color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 5px; padding: 6px 10px; }
+    .error-sug strong { color: #15803d; }
+    .error-detail { font-size: 12px; color: #64748b; margin-top: 6px; line-height: 1.6; }
+
+    /* 拼写检查 */
+    .spell-item { border: 1px solid #e2e8f0; border-left: 4px solid #d97706; border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: #fff; }
+    .spell-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #fffbeb; cursor: pointer; user-select: none; transition: background .15s; }
+    .spell-header:hover { background: #fff1e0; }
+    .spell-wrong { font-family: Consolas, monospace; font-weight: 700; font-size: 13px; color: #92400e; text-decoration: line-through; }
+    .spell-arrow { color: #94a3b8; font-size: 11px; flex-shrink: 0; }
+    .spell-body { display: none; padding: 10px 14px; border-top: 1px solid #fed7aa; }
+    .spell-body.open { display: block; }
+    .spell-fix { font-size: 13px; color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 5px; padding: 6px 10px; cursor: pointer; }
+    .spell-fix strong { color: #15803d; }
+    .spell-fix:hover { background: #dcfce7; }
+    .spell-hint { font-size: 12px; color: #64748b; margin-top: 6px; }
+
+    /* 命令解析 */
+    .result-item { border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 8px; margin-bottom: 12px; overflow: hidden; background: #fff; }
+    .result-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; cursor: pointer; user-select: none; transition: background .15s; }
+    .result-header:hover { background: #f1f5f9; }
+    .result-num { background: #2563eb; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .result-cmd { font-family: Consolas, monospace; font-weight: 700; font-size: 13px; color: #0f172a; flex: 1; word-break: break-all; }
+    .result-cat { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+    .toggle-icon { font-size: 11px; color: #94a3b8; flex-shrink: 0; }
+    .result-body { display: none; padding: 12px 14px; border-top: 1px solid #e2e8f0; }
+    .result-body.open { display: block; }
+    .info-row { margin-bottom: 10px; }
+    .info-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+    .info-value { font-size: 13px; color: #334155; line-height: 1.6; }
+    .related-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; }
+    .related-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #f1f5f9; border: 1px solid #e2e8f0; font-family: Consolas, monospace; font-size: 11px; color: #475569; }
+    .err-list { list-style: none; margin: 0; padding: 0; }
+    .err-list li { position: relative; padding-left: 16px; margin-bottom: 4px; font-size: 12px; color: #7c3aed; background: #faf5ff; border-radius: 4px; padding: 4px 8px 4px 16px; }
+    .err-list li::before { content: "\26A0"; position: absolute; left: 3px; font-size: 10px; }
+    .tshoot-box { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 5px; padding: 8px 12px; font-size: 12px; color: #9a3412; line-height: 1.6; }
+
+    /* 配置检测 */
+    .issue-item { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+    .issue-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; user-select: none; transition: background .15s; }
+    .issue-header:hover { background: #f8fafc; }
+    .issue-level { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+    .level-error { background: #fee2e2; color: #991b1b; }
+    .level-warning { background: #fef3c7; color: #92400e; }
+    .level-info { background: #dbeafe; color: #1d4ed8; }
+    .issue-mod { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: #f1f5f9; color: #64748b; flex-shrink: 0; }
+    .issue-msg { flex: 1; font-size: 13px; font-weight: 600; color: #1e293b; }
+    .issue-arrow { color: #94a3b8; font-size: 11px; flex-shrink: 0; }
+    .issue-body { display: none; padding: 0 14px 10px; border-top: 1px solid #e2e8f0; }
+    .issue-body.open { display: block; padding-top: 10px; }
+    .issue-detail { font-size: 12px; color: #64748b; line-height: 1.6; margin-bottom: 6px; }
+    .issue-sug { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 5px; padding: 6px 10px; font-size: 12px; color: #166534; line-height: 1.6; }
+    .issue-sug strong { color: #15803d; }
+
+    .empty-state { text-align: center; padding: 30px; color: #94a3b8; font-size: 13px; }
+    .no-results { text-align: center; padding: 20px; color: #94a3b8; font-size: 13px; }
+    .highlight { background: #fef08a; padding: 1px 2px; border-radius: 2px; }
+
+    /* 分类颜色 */
+    .cat-\u57fa\u7840\u914d\u7f6e { background: #dbeafe; color: #1d4ed8; }
+    .cat-\u67e5\u770b\u4e0e\u7ef4\u62a4 { background: #e0e7ff; color: #4338ca; }
+    .cat-\u63a5\u53e3\u914d\u7f6e { background: #d1fae5; color: #065f46; }
+    .cat-VLAN { background: #fef3c7; color: #92400e; }
+    .cat-\u4e09\u5c42\u914d\u7f6e { background: #fce7f3; color: #9d174d; }
+    .cat-\u5b89\u5168\u914d\u7f6e { background: #fee2e2; color: #991b1b; }
+    .cat-\u52a8\u6001\u8def\u7531 { background: #cffafe; color: #155e75; }
+    .cat-DHCP { background: #e0e7ff; color: #3730a3; }
+    .cat-\u8fdc\u7a0b\u7ba1\u7406 { background: #f3e8ff; color: #6b21a8; }
+    .cat-\u7cfb\u7edf\u7ba1\u7406 { background: #f1f5f9; color: #334155; }
+    .cat-\u914d\u7f6e\u7ef4\u62a4 { background: #fef9c3; color: #713f12; }
+    .cat-\u4e8c\u5c42\u63a7\u5236 { background: #ccfbf1; color: #134e4a; }
+    .cat-NAT { background: #ffe4e6; color: #9f1239; }
+    .cat-\u57fa\u7840\u64cd\u4f5c { background: #f1f5f9; color: #475569; }
+    .cat-\u5176\u4ed6 { background: #f1f5f9; color: #64748b; }
+    /* 知识学习 */
+    .learn-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .learn-select { padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; font-size:13px; }
+    .learn-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; }
+    .learn-card { border:1px solid #e2e8f0; border-radius:9px; padding:14px; background:#fff; }
+    .learn-card h3 { margin:0 0 7px; font-size:15px; color:#0f172a; }
+    .learn-level { display:inline-block; font-size:10px; padding:2px 7px; border-radius:4px; background:#e0e7ff; color:#4338ca; margin-bottom:8px; }
+    .learn-summary { color:#64748b; font-size:12px; line-height:1.6; }
+    .learn-steps { padding-left:18px; color:#334155; font-size:12px; line-height:1.8; }
+    .learn-cmds { margin-top:8px; display:flex; flex-wrap:wrap; gap:5px; }
+    .learn-cmd { font-family:Consolas,monospace; font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; padding:4px 7px; border-radius:4px; cursor:pointer; }
+    .learn-cmd:hover { background:#eef2ff; }
+    .category-tree { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:15px; }
+    .category-chip { padding:5px 9px; border-radius:5px; background:#f1f5f9; color:#475569; font-size:11px; }
+    .category-chip { cursor:pointer; transition:all .15s ease; }
+    .category-chip:hover { background:#e2e8f0; color:#0f172a; }
+    .category-root { font-weight:600; }
+    .category-child { background:#f8fafc; }
+    .learn-card-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .learn-category-label { color:#64748b; font-size:11px; margin-bottom:8px; }
+    .learn-command-detail { width:100%; margin-top:5px; }
+    .learn-command-desc { color:#64748b; font-size:11px; line-height:1.5; padding:3px 7px 0; }
+    .learn-example { margin:5px 7px; padding:6px 8px; background:#f8fafc; border-radius:5px; font-size:11px; color:#475569; }
+    .learn-example pre { margin:4px 0 0; white-space:pre-wrap; font-family:Consolas,monospace; }
+
+
+
+    .smart-card { border:1px solid #dbeafe; background:#f8fbff; }
+    .smart-toolbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+    .smart-toolbar input { flex:1; min-width:220px; padding:9px 11px; border:1px solid #cbd5e1; border-radius:7px; }
+    .smart-result { border:1px solid #e2e8f0; border-radius:8px; background:#fff; margin:8px 0; overflow:hidden; }
+    .smart-line { display:flex; align-items:center; gap:8px; padding:10px 12px; }
+    .smart-no { width:32px; color:#94a3b8; font-size:12px; text-align:right; }
+    .smart-cmd { flex:1; font-family:Consolas,monospace; font-size:13px; word-break:break-all; }
+    .smart-badge { padding:3px 7px; border-radius:5px; font-size:11px; white-space:nowrap; background:#f1f5f9; color:#475569; }
+    .smart-info { background:#dcfce7; color:#166534; } .smart-warn { background:#fef3c7; color:#92400e; }
+    .smart-detail { padding:0 12px 12px 52px; color:#475569; font-size:12px; line-height:1.7; }
+    .smart-detail strong { color:#0f172a; }
+    .auto-wrap { position:relative; flex:1; min-width:220px; }
+    .auto-list { position:absolute; z-index:20; top:100%; left:0; right:0; background:#fff; border:1px solid #cbd5e1; border-top:0; border-radius:0 0 7px 7px; box-shadow:0 8px 20px rgba(15,23,42,.08); display:none; }
+    .auto-item { padding:8px 10px; font-family:Consolas,monospace; font-size:12px; cursor:pointer; } .auto-item:hover { background:#eff6ff; }
+
+    @media (max-width: 640px) {
+      .header { padding: 16px 5%; }
+      .container { width: 95%; margin: 12px auto; }
+      .card { padding: 14px; }
+      .tab-btn { padding: 7px 10px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>H3C 配置智能解析平台</h1>
+    <p>V3.2 · 命令搜索 · 拼写检查 · 分类体系 · 知识学习 · 配置检测</p>
+  </div>
+
+  <div class="container">
+    <!-- 命令搜索 -->
+    <div class="card">
+      <h2>命令搜索</h2>
+      <div class="search-box">
+        <input type="text" id="cmdSearchInput" placeholder="输入命令关键字，如: vlan、interface、display、ospf...">
+        <button id="cmdSearchBtn">搜索</button>
+      </div>
+      <p class="search-hint">搜索整个 H3C 命令知识库，点击结果可插入到配置框</p>
+      <div id="searchCount" class="search-count" style="display:none;"></div>
+      <div id="searchResults"></div>
+    </div>
+
+    <!-- 配置输入 -->
+    <div class="card smart-card">
+      <h2>🧠 智能命令分析</h2>
+      <div class="smart-toolbar">
+        <div class="auto-wrap"><input type="text" id="smartQuery" placeholder="输入命令搜索/自动补全，如 port link-typ..." autocomplete="off"><div id="smartAutoList" class="auto-list"></div></div>
+        <button class="btn-secondary" id="smartSearchBtn">知识库搜索</button>
+      </div>
+      <div id="smartSearchResults"></div>
+      <div id="smartResults"><div class="empty-state"><p>输入配置后，点击“开始解析”即可进行逐行智能命令分析。</p></div></div>
+    </div>
+
+    <div class="card">
+      <h2>① 粘贴 H3C 配置</h2>
+      <textarea id="config" placeholder="例如：
+system-view
+vlan 10
+vlan 20
+interface GigabitEthernet1/0/1
+port link-type access
+port access vlan 10
+quit
+interface GigabitEthernet1/0/24
+port link-type trunk
+port trunk permit vlan 10 20
+quit
+interface Vlanif10
+ip address 192.168.10.1 255.255.255.0
+quit
+ip route-static 0.0.0.0 0.0.0.0 192.168.10.254
+save"></textarea>
+      <div class="btn-row">
+        <button class="btn-primary" id="parseBtn">开始解析</button>
+        <button class="btn-secondary" id="clearBtn">清空</button>
+        <button class="btn-secondary" id="exampleBtn">加载示例</button>
+      </div>
+      <p id="status"></p>
+    </div>
+
+    <!-- 分析结果 -->
+    <div class="card">
+      <h2>② 分析结果</h2>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-parse">命令解析</button>
+        <button class="tab-btn" data-tab="tab-error">错误分析<span class="tab-badge" id="errorTabBadge" style="display:none;">0</span></button>
+        <button class="tab-btn" data-tab="tab-spell">拼写检查<span class="tab-badge warn" id="spellTabBadge" style="display:none;">0</span></button>
+        <button class="tab-btn" data-tab="tab-learn">知识学习</button>
+        <button class="tab-btn" data-tab="tab-check">配置检测<span class="tab-badge info" id="checkTabBadge" style="display:none;">0</span></button>
+      </div>
+
+      <div id="tab-parse" class="tab-content active">
+        <div class="filter-bar">
+          <input type="text" id="parseSearch" placeholder="在解析结果中搜索命令...">
+          <span class="count" id="parseSearchCount"></span>
+        </div>
+        <div id="parseResults"><div class="empty-state"><p>等待你粘贴配置并点击"开始解析"</p></div></div>
+      </div>
+
+      <div id="tab-error" class="tab-content">
+        <div class="filter-bar">
+          <input type="text" id="errorSearch" placeholder="搜索错误命令或问题描述...">
+          <span class="count" id="errorSearchCount"></span>
+        </div>
+        <div id="errorResults"><div class="empty-state"><p>请先点击"开始解析"查看错误分析</p></div></div>
+      </div>
+
+      <div id="tab-spell" class="tab-content">
+        <div id="spellResults"><div class="empty-state"><p>请先点击"开始解析"查看拼写检查结果</p></div></div>
+      </div>
+
+      <div id="tab-learn" class="tab-content">
+        <div class="learn-toolbar">
+          <select id="learnCategory" class="learn-select"><option value="">全部学习分类</option></select>
+          <button class="btn-secondary" id="loadKnowledgeBtn">刷新知识</button>
+        </div>
+        <div id="categoryTree" class="category-tree"><span class="category-chip">正在加载分类体系...</span></div>
+        <div id="learnResults"><div class="empty-state"><p>正在加载知识学习内容...</p></div></div>
+      </div>
+
+      <div id="tab-check" class="tab-content">
+        <div class="filter-bar">
+          <input type="text" id="checkSearch" placeholder="搜索问题描述...">
+          <span class="count" id="checkSearchCount"></span>
+        </div>
+        <div class="filter-tags" id="filterTags">
+          <span class="filter-tag active" data-mod="all">全部<span class="cnt" id="cntAll">0</span></span>
+          <span class="filter-tag" data-mod="VLAN">VLAN<span class="cnt" id="cntVLAN">0</span></span>
+          <span class="filter-tag" data-mod="Interface">接口<span class="cnt" id="cntInterface">0</span></span>
+          <span class="filter-tag" data-mod="Trunk">Trunk<span class="cnt" id="cntTrunk">0</span></span>
+          <span class="filter-tag" data-mod="IP">IP<span class="cnt" id="cntIP">0</span></span>
+          <span class="filter-tag" data-mod="完整性">完整性<span class="cnt" id="cntCompleteness">0</span></span>
+        </div>
+        <div id="checkResults"><div class="empty-state"><p>请先点击"开始解析"查看配置检测结果</p></div></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ===== 全局数据 =====
+var currentParsed = [];
+var currentIssues = [];
+var currentScore = null;
+var currentErrorCommands = [];
+var currentSpellingErrors = [];
+var activeModuleFilter = "all";
+var parseSearchText = "";
+var errorSearchText = "";
+var checkSearchText = "";
+
+// ===== 分类体系与知识学习 =====
+var learnCategory = document.getElementById("learnCategory");
+var learnResults = document.getElementById("learnResults");
+var categoryTree = document.getElementById("categoryTree");
+document.getElementById("loadKnowledgeBtn").addEventListener("click", loadKnowledge);
+learnCategory.addEventListener("change", loadKnowledge);
+
+async function loadKnowledge() {
+  try {
+    var cat = learnCategory.value;
+    var url = "http://127.0.0.1:8000/api/knowledge" + (cat ? "?category=" + encodeURIComponent(cat) : "");
+    var r = await fetch(url); var data = await r.json(); renderLessons(data.lessons || []);
+  } catch(e) { learnResults.innerHTML = '<div class="empty-state"><p class="error-text">知识库加载失败，请确认后端已启动。</p></div>'; }
+}
+async function loadCategories() {
+  try {
+    var r = await fetch("http://127.0.0.1:8000/api/knowledge/categories");
+    var data = await r.json();
+    var html = '';
+    // 防止重复加载 option
+    learnCategory.innerHTML = '<option value="">全部学习分类</option>';
+
+    (data.categories || []).forEach(function(c) {
+      html += '<span class="category-chip category-root" data-category="' + escapeHtml(c.name) + '">' +
+        escapeHtml(c.name) + ' · ' + c.count + ' 条命令</span>';
+
+      (c.children || []).forEach(function(child) {
+        var childCount = (c.child_counts || {})[child] || 0;
+        html += '<span class="category-chip category-child" data-category="' + escapeHtml(child) + '">' +
+          '↳ ' + escapeHtml(child) + ' · ' + childCount + ' 条命令</span>';
+      });
+
+      var opt = document.createElement("option");
+      opt.value = c.name;
+      opt.textContent = c.name + "（" + c.count + "条）";
+      learnCategory.appendChild(opt);
+
+      (c.children || []).forEach(function(child) {
+        var childCount = (c.child_counts || {})[child] || 0;
+        var childOpt = document.createElement("option");
+        childOpt.value = child;
+        childOpt.textContent = "　↳ " + child + "（" + childCount + "条）";
+        learnCategory.appendChild(childOpt);
+      });
+    });
+
+    categoryTree.innerHTML = html || '<span class="category-chip">暂无分类</span>';
+
+    categoryTree.querySelectorAll(".category-chip[data-category]").forEach(function(el) {
+      el.addEventListener("click", function() {
+        var cat = this.getAttribute("data-category");
+        learnCategory.value = cat;
+        loadKnowledgeByCategory(cat);
+      });
+    });
+  } catch(e) {
+    categoryTree.innerHTML='<span class="category-chip">分类加载失败</span>';
+  }
+}
+
+var CATEGORY_ROOT_NAMES = ["基础操作", "系统管理", "二层交换", "三层网络", "安全与服务"];
+
+async function loadKnowledgeByCategory(cat) {
+  try {
+    var url = "http://127.0.0.1:8000/api/knowledge?category=" + encodeURIComponent(cat);
+    var r = await fetch(url);
+    var data = await r.json();
+    renderLessons(data.lessons || []);
+  } catch(e) {
+    learnResults.innerHTML = '<div class="empty-state"><p class="error-text">知识库加载失败，请确认后端已启动。</p></div>';
+  }
+}
+
+function renderLessons(lessons) {
+  if (!lessons.length) {
+    learnResults.innerHTML='<div class="empty-state"><p>暂无该分类的学习内容。</p></div>';
+    return;
+  }
+
+  var html='<div class="learn-grid">';
+  lessons.forEach(function(x) {
+    var cmdHtml = (x.command_items || []).map(function(k) {
+      var text = k.syntax || k.command || "";
+      return '<div class="learn-command-detail">' +
+        '<div class="learn-cmd" data-command="' + escapeHtml(text) + '">' + escapeHtml(text) + '</div>' +
+        '<div class="learn-command-desc">' + escapeHtml(k.description || "") + '</div>' +
+        (k.example ? '<div class="learn-example"><strong>示例：</strong><pre>' + escapeHtml(k.example) + '</pre></div>' : '') +
+      '</div>';
+    }).join('');
+
+    html += '<div class="learn-card">' +
+      '<div class="learn-card-head"><h3>'+escapeHtml(x.title)+'</h3><span class="learn-level">'+escapeHtml(x.level||"基础")+'</span></div>' +
+      '<div class="learn-category-label">分类：' + escapeHtml(x.category || "") + ' · ' + (x.command_count || 0) + ' 条命令</div>' +
+      '<div class="learn-summary">'+escapeHtml(x.summary||"")+'</div>' +
+      '<ol class="learn-steps">'+(x.steps||[]).map(function(st){return '<li>'+escapeHtml(st)+'</li>';}).join('')+'</ol>' +
+      '<div class="learn-cmds">'+cmdHtml+'</div>' +
+    '</div>';
+  });
+  html+='</div>';
+  learnResults.innerHTML=html;
+
+  learnResults.querySelectorAll('.learn-cmd').forEach(function(el){
+    el.addEventListener('click',function(){
+      var cmd=this.getAttribute('data-command');
+      configEl.value+=(configEl.value.trim()?"\n":"")+cmd;
+      configEl.focus();
+    });
+  });
+}
+
+loadCategories(); loadKnowledge();
+
+
+
+// ===== DOM =====
+var configEl = document.getElementById("config");
+var parseBtn = document.getElementById("parseBtn");
+var clearBtn = document.getElementById("clearBtn");
+var exampleBtn = document.getElementById("exampleBtn");
+var parseResults = document.getElementById("parseResults");
+var errorResults = document.getElementById("errorResults");
+var spellResults = document.getElementById("spellResults");
+var checkResults = document.getElementById("checkResults");
+var statusEl = document.getElementById("status");
+var cmdSearchInput = document.getElementById("cmdSearchInput");
+var cmdSearchBtn = document.getElementById("cmdSearchBtn");
+var searchResultsDiv = document.getElementById("searchResults");
+var searchCountDiv = document.getElementById("searchCount");
+var parseSearchInput = document.getElementById("parseSearch");
+var errorSearchInput = document.getElementById("errorSearch");
+var checkSearchInput = document.getElementById("checkSearch");
+
+// ===== 命令知识库搜索 =====
+cmdSearchBtn.addEventListener("click", doCmdSearch);
+cmdSearchInput.addEventListener("keydown", function(e) { if (e.key === "Enter") doCmdSearch(); });
+
+function doCmdSearch() {
+  var keyword = cmdSearchInput.value.trim();
+  if (!keyword) { searchResultsDiv.classList.remove("show"); searchCountDiv.style.display = "none"; return; }
+  searchResultsDiv.innerHTML = '<div class="search-empty">搜索中...</div>';
+  searchResultsDiv.classList.add("show");
+  searchCountDiv.style.display = "none";
+
+  fetch("http://127.0.0.1:8000/api/search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ keyword: keyword })
+  }).then(function(r) { return r.json(); })
+    .then(function(data) { renderSearchResults(data.results, data.total, keyword); })
+    .catch(function() { searchResultsDiv.innerHTML = '<div class="search-empty">无法连接后端，请确认服务已启动</div>'; });
+}
+
+function renderSearchResults(results, total, keyword) {
+  if (!results.length) {
+    searchResultsDiv.innerHTML = '<div class="search-empty">未找到匹配 "' + escapeHtml(keyword) + '" 的命令</div>';
+    searchCountDiv.style.display = "none"; return;
+  }
+  searchCountDiv.textContent = "共找到 " + total + " 条相关命令";
+  searchCountDiv.style.display = "block";
+  var html = "";
+  results.forEach(function(item) {
+    var catClass = "cat-" + escapeHtml(item.category);
+    var expr = item.explanation ? item.explanation.substring(0, 80) + (item.explanation.length > 80 ? "..." : "") : "";
+    html += '<div class="search-item" onclick="insertCommand(\'' + escapeJs(item.command) + '\')">' +
+      '<div class="search-item-header">' +
+        '<span class="search-cmd">' + highlightInHtml(escapeHtml(item.command), keyword) + '</span>' +
+        '<span class="search-cat ' + catClass + '">' + escapeHtml(item.category) + '</span>' +
+        '<span class="search-match-type">' + matchTypeText(item.match_type) + '</span>' +
+      '</div>' +
+      '<div class="search-item-title">' + escapeHtml(item.title) + '</div>' +
+      '<div class="search-item-expr">' + escapeHtml(expr) + '</div>' +
+    '</div>';
+  });
+  searchResultsDiv.innerHTML = html;
+}
+
+function matchTypeText(type) {
+  var map = { command: "命令匹配", title: "标题匹配", category: "分类匹配", explanation: "解释匹配", json_knowledge: "知识库匹配", other: "模糊匹配" };
+  return map[type] || type;
+}
+
+function insertCommand(cmd) {
+  var current = configEl.value;
+  configEl.value = current ? current + "\n" + cmd : cmd;
+  configEl.focus();
+}
+
+// ===== Tab 切换 =====
+document.querySelectorAll(".tab-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".tab-btn").forEach(function(b) { b.classList.remove("active"); });
+    document.querySelectorAll(".tab-content").forEach(function(c) { c.classList.remove("active"); });
+    btn.classList.add("active");
+    document.getElementById(btn.getAttribute("data-tab")).classList.add("active");
+  });
+});
+
+// ===== 模块筛选 =====
+document.querySelectorAll(".filter-tag").forEach(function(tag) {
+  tag.addEventListener("click", function() {
+    document.querySelectorAll(".filter-tag").forEach(function(t) { t.classList.remove("active"); });
+    tag.classList.add("active");
+    activeModuleFilter = tag.getAttribute("data-mod");
+    renderCheckIssues();
+  });
+});
+
+// ===== 搜索监听 =====
+parseSearchInput.addEventListener("input", function() { parseSearchText = this.value.trim().toLowerCase(); renderParseResults(); });
+errorSearchInput.addEventListener("input", function() { errorSearchText = this.value.trim().toLowerCase(); renderErrorAnalysis(); })
+checkSearchInput.addEventListener("input", function() { checkSearchText = this.value.trim().toLowerCase(); renderCheckIssues(); });
+
+// ===== 清空 =====
+clearBtn.addEventListener("click", function() {
+  configEl.value = "";
+  parseResults.innerHTML = '<div class="empty-state"><p>等待你粘贴配置并点击"开始解析"</p></div>';
+  errorResults.innerHTML = '<div class="empty-state"><p>请先点击"开始解析"查看错误分析</p></div>';
+  spellResults.innerHTML = '<div class="empty-state"><p>请先点击"开始解析"查看拼写检查结果</p></div>';
+  checkResults.innerHTML = '<div class="empty-state"><p>请先点击"开始解析"查看配置检测结果</p></div>';
+  statusEl.textContent = ""; statusEl.className = "";
+  cmdSearchInput.value = ""; searchResultsDiv.classList.remove("show"); searchCountDiv.style.display = "none";
+  parseSearchInput.value = ""; errorSearchInput.value = ""; checkSearchInput.value = "";
+  currentParsed = []; currentIssues = []; currentScore = null;
+  currentErrorCommands = []; currentSpellingErrors = [];
+  document.getElementById("errorTabBadge").style.display = "none";
+  document.getElementById("spellTabBadge").style.display = "none";
+  document.getElementById("checkTabBadge").style.display = "none";
+});
+
+// ===== 加载示例 =====
+exampleBtn.addEventListener("click", function() {
+  configEl.value = "system-view\nvlan 10\nvlan 20\ninterface GigabitEthernet1/0/1\nport link-type access\nport access vlan 10\nquit\ninterface GigabitEthernet1/0/24\nport link-type trunk\nport trunk permit vlan 10 20\nquit\ninterface Vlanif10\nip address 192.168.10.1 255.255.255.0\nquit\ninterface Vlanif20\nip address 192.168.20.1 255.255.255.0\nquit\nip route-static 0.0.0.0 0.0.0.0 192.168.10.254\nsave";
+  statusEl.textContent = "已加载示例配置";
+  statusEl.className = "success-text";
+});
+
+// ===== 开始解析 =====
+parseBtn.addEventListener("click", async function() {
+  var config = configEl.value.trim();
+  if (!config) { statusEl.innerHTML = '<span class="error-text">请先粘贴 H3C 配置。</span>'; return; }
+  parseBtn.disabled = true;
+  statusEl.textContent = "正在解析和检测...";
+  statusEl.className = "";
+  parseResults.innerHTML = "";
+  errorResults.innerHTML = "";
+  spellResults.innerHTML = "";
+  checkResults.innerHTML = "";
+
+  try {
+    var response = await fetch("http://127.0.0.1:8000/api/analyze", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ config: config })
+    });
+    if (!response.ok) throw new Error();
+    var data = await response.json();
+    currentParsed = data.parsed || [];
+    currentIssues = data.issues || [];
+    currentScore = data.score || { score: 0, error_count: 0, warning_count: 0, info_count: 0 };
+    currentErrorCommands = data.error_commands || [];
+    currentSpellingErrors = data.spelling_errors || [];
+    updateBadges();
+    updateFilterCounts();
+    renderParseResults();
+    renderErrorAnalysis();
+    renderSpellCheck();
+    renderCheckIssues();
+    statusEl.textContent = "解析完成：识别 " + currentParsed.length + " 条命令，发现 " + currentIssues.length + " 个问题，拼写错误 " + currentSpellingErrors.length + " 处";
+    statusEl.className = "success-text";
+  } catch (e) {
+    var errHtml = '<div class="empty-state"><p class="error-text">无法连接后端，请确认 FastAPI 已启动在 8000 端口。<br>运行方式：双击项目根目录的 start.bat</p></div>';
+    parseResults.innerHTML = errHtml;
+    errorResults.innerHTML = errHtml;
+    spellResults.innerHTML = errHtml;
+    checkResults.innerHTML = errHtml;
+    statusEl.textContent = "";
+  } finally { parseBtn.disabled = false; }
+});
+
+function updateBadges() {
+  var eb = document.getElementById("errorTabBadge");
+  var sb = document.getElementById("spellTabBadge");
+  var cb = document.getElementById("checkTabBadge");
+  if (currentErrorCommands.length) { eb.textContent = currentErrorCommands.length; eb.style.display = ""; } else { eb.style.display = "none"; }
+  if (currentSpellingErrors.length) { sb.textContent = currentSpellingErrors.length; sb.style.display = ""; } else { sb.style.display = "none"; }
+  if (currentIssues.length) { cb.textContent = currentIssues.length; cb.style.display = ""; } else { cb.style.display = "none"; }
+}
+
+function updateFilterCounts() {
+  var c = { all: currentIssues.length, VLAN: 0, Interface: 0, Trunk: 0, IP: 0, "完整性": 0 };
+  currentIssues.forEach(function(i) { if (c[i.module] !== undefined) c[i.module]++; });
+  document.getElementById("cntAll").textContent = c.all;
+  document.getElementById("cntVLAN").textContent = c.VLAN;
+  document.getElementById("cntInterface").textContent = c.Interface;
+  document.getElementById("cntTrunk").textContent = c.Trunk;
+  document.getElementById("cntIP").textContent = c.IP;
+  document.getElementById("cntCompleteness").textContent = c["完整性"];
+}
+
+// ===== 渲染命令解析 =====
+function renderParseResults() {
+  if (!currentParsed.length) { parseResults.innerHTML = '<div class="empty-state"><p>没有检测到有效配置。</p></div>'; document.getElementById("parseSearchCount").textContent = ""; return; }
+  var filtered = currentParsed;
+  if (parseSearchText) {
+    filtered = currentParsed.filter(function(item) {
+      return item.command.toLowerCase().indexOf(parseSearchText) !== -1 ||
+             item.title.toLowerCase().indexOf(parseSearchText) !== -1 ||
+             item.category.toLowerCase().indexOf(parseSearchText) !== -1;
+    });
+  }
+  document.getElementById("parseSearchCount").textContent = parseSearchText ? "找到 " + filtered.length + " 条" : "";
+  if (!filtered.length) { parseResults.innerHTML = '<div class="no-results">没有找到匹配 "' + escapeHtml(parseSearchText) + '" 的命令</div>'; return; }
+  parseResults.innerHTML = "";
+  filtered.forEach(function(item, i) { parseResults.appendChild(createResultItem(item, i + 1)); });
+}
+
+// ===== 渲染错误分析 =====
+function renderErrorAnalysis() {
+  if (!currentErrorCommands.length) {
+    errorResults.innerHTML = '<div class="empty-state"><p>\u{1F389} 恭喜！未发现配置错误，配置质量良好。</p></div>';
+    document.getElementById("errorSearchCount").textContent = ""; return;
+  }
+  var filtered = currentErrorCommands;
+  if (errorSearchText) {
+    filtered = currentErrorCommands.filter(function(item) {
+      return item.raw_command.toLowerCase().indexOf(errorSearchText) !== -1 ||
+             item.detail.toLowerCase().indexOf(errorSearchText) !== -1 ||
+             item.suggestions.some(function(s) { return s.toLowerCase().indexOf(errorSearchText) !== -1; });
+    });
+  }
+  document.getElementById("errorSearchCount").textContent = errorSearchText ? "找到 " + filtered.length + " 条" : "";
+  if (!filtered.length) { errorResults.innerHTML = '<div class="no-results">没有找到匹配的条目</div>'; return; }
+  var html = "";
+  filtered.forEach(function(item) { html += createErrorCard(item); });
+  errorResults.innerHTML = html;
+  // 绑定事件
+  errorResults.querySelectorAll(".error-header").forEach(function(h) {
+    h.addEventListener("click", function() {
+      var body = this.nextElementSibling;
+      var arrow = this.querySelector(".error-arrow");
+      body.classList.toggle("open");
+      arrow.classList.toggle("open");
+    });
+  });
+}
+
+// ===== 渲染拼写检查 =====
+function renderSpellCheck() {
+  if (!currentSpellingErrors.length) {
+    spellResults.innerHTML = '<div class="empty-state"><p>\u{1F50D} 未发现拼写错误，所有命令拼写正确。</p></div>';
+    return;
+  }
+  var html = "";
+  currentSpellingErrors.forEach(function(err) { html += createSpellItem(err); });
+  spellResults.innerHTML = html;
+  // 绑定事件
+  spellResults.querySelectorAll(".spell-header").forEach(function(h) {
+    h.addEventListener("click", function() {
+      var body = this.nextElementSibling;
+      var arrow = this.querySelector(".spell-arrow");
+      body.classList.toggle("open");
+      arrow.classList.toggle("open");
+    });
+  });
+  spellResults.querySelectorAll(".spell-fix").forEach(function(f) {
+    f.addEventListener("click", function(e) {
+      e.stopPropagation();
+      var err = this.getAttribute("data-err");
+      if (err) {
+        var current = configEl.value;
+        configEl.value = current.replace(new RegExp(escapeReg(err), "i"), err === "interface" ? "interface" : err);
+        configEl.focus();
+      }
+    });
+  });
+}
+
+// ===== 渲染配置检测 =====
+function renderCheckIssues() {
+  if (!currentIssues.length) {
+    checkResults.innerHTML = '<div class="empty-state"><p>\u{1F389} 恭喜！未检测到配置问题。</p></div>';
+    document.getElementById("checkSearchCount").textContent = ""; return;
+  }
+  var filtered = currentIssues;
+  if (activeModuleFilter !== "all") { filtered = filtered.filter(function(i) { return i.module === activeModuleFilter; }); }
+  if (checkSearchText) {
+    filtered = filtered.filter(function(i) {
+      return i.message.toLowerCase().indexOf(checkSearchText) !== -1 ||
+             i.module.toLowerCase().indexOf(checkSearchText) !== -1 ||
+             i.suggestion.toLowerCase().indexOf(checkSearchText) !== -1;
+    });
+  }
+  document.getElementById("checkSearchCount").textContent = (checkSearchText || activeModuleFilter !== "all") ? "找到 " + filtered.length + " 条" : "";
+  if (!filtered.length) { checkResults.innerHTML = '<div class="no-results">没有找到匹配的条件</div>'; return; }
+  var html = renderScoreCard(currentScore);
+  html += '<div style="margin-top:8px;">';
+  filtered.forEach(function(issue) { html += createIssueItem(issue); });
+  html += '</div>';
+  checkResults.innerHTML = html;
+  checkResults.querySelectorAll(".issue-header").forEach(function(h) {
+    h.addEventListener("click", function() {
+      var body = this.nextElementSibling;
+      var arrow = this.querySelector(".issue-arrow");
+      body.classList.toggle("open");
+      arrow.classList.toggle("open");
+    });
+  });
+}
+
+function renderScoreCard(score) {
+  if (!score) return "";
+  var cls = "score-excellent", text = "优秀";
+  if (score.score < 50) { cls = "score-danger"; text = "严重"; }
+  else if (score.score < 70) { cls = "score-warn"; text = "风险"; }
+  else if (score.score < 90) { cls = "score-good"; text = "基本正常"; }
+  return '<div class="score-card">' +
+    '<div class="score-circle ' + cls + '">' +
+      '<span class="s-num">' + score.score + '</span>' +
+      '<span class="s-label">风险: ' + text + '</span>' +
+    '</div>' +
+    '<div class="score-stats">' +
+      '<div class="stat-row"><span class="dot dot-error"></span><span>严重: <strong>' + score.error_count + '</strong></span></div>' +
+      '<div class="stat-row"><span class="dot dot-warning"></span><span>警告: <strong>' + score.warning_count + '</strong></span></div>' +
+      '<div class="stat-row"><span class="dot dot-info"></span><span>提示: <strong>' + score.info_count + '</strong></span></div>' +
+    '</div></div>';
+}
+
+// ===== 创建错误分析卡片（返回 HTML 字符串）=====
+function createErrorCard(item) {
+  var isWarn = item.issues.every(function(i) { return i.level !== "error"; });
+  var icon = isWarn ? "\u26A0\uFE0F" : "\u274C";
+  var issuesHtml = item.issues.map(function(issue) {
+    return '<div class="error-issue">' +
+      '<div class="error-issue-title">' + escapeHtml(issue.message) + '</div>' +
+      '<div class="error-issue-mod">[' + escapeHtml(issue.module) + '</div>' +
+      (issue.detail ? '<div class="error-detail">' + escapeHtml(issue.detail) + '</div>' : '') +
+      '<div class="error-sug"><strong>\u{1F527} 改进建议：</strong>' + escapeHtml(issue.suggestion) + '</div>' +
+    '</div>';
+  }).join("");
+  return '<div class="error-card' + (isWarn ? ' warn' : '') + '">' +
+    '<div class="error-header">' +
+      '<span class="error-icon">' + icon + '</span>' +
+      '<span class="error-cmd">' + escapeHtml(item.raw_command) + '</span>' +
+      '<span class="error-badge ' + (isWarn ? 'badge-warning' : 'badge-error') + '">' + (isWarn ? '警告' : '错误') + '</span>' +
+      '<span class="error-arrow">\u25BC</span>' +
+    '</div>' +
+    '<div class="error-body">' + issuesHtml + '</div>' +
+  '</div>';
+}
+
+// ===== 创建拼写检查条目（返回 HTML 字符串）=====
+function createSpellItem(err) {
+  var hintHtml = err.hint ? '<div class="spell-hint">' + escapeHtml(err.hint) + '</div>' : '';
+  var fixText = escapeHtml(err.suggestion);
+  var origText = escapeHtml(err.original);
+  return '<div class="spell-item">' +
+    '<div class="spell-header">' +
+      '<span style="font-size:15px;flex-shrink:0;">\u26A0\uFE0F</span>' +
+      '<span class="spell-wrong">' + origText + '</span>' +
+      '<span style="color:#94a3b8;font-size:12px;">\u2192</span>' +
+      '<span style="font-family:Consolas,monospace;font-weight:700;font-size:13px;color:#166534;">' + fixText + '</span>' +
+      '<span class="spell-arrow">\u25BC</span>' +
+    '</div>' +
+    '<div class="spell-body">' +
+      '<div class="spell-fix" data-err="' + escapeHtml(err.original) + '"><strong>\u{1F527} 建议修改为：</strong> ' + fixText + '（点击直接替换）</div>' +
+      hintHtml +
+    '</div>' +
+  '</div>';
+}
+
+// ===== 创建配置检测条目（返回 HTML 字符串）=====
+function createIssueItem(issue) {
+  var lc = issue.level === "error" ? "level-error" : issue.level === "warning" ? "level-warning" : "level-info";
+  var lt = issue.level === "error" ? "错误" : issue.level === "warning" ? "警告" : "提示";
+  return '<div class="issue-item">' +
+    '<div class="issue-header">' +
+      '<span class="issue-level ' + lc + '">' + lt + '</span>' +
+      '<span class="issue-mod">[' + escapeHtml(issue.module) + ']</span>' +
+      '<span class="issue-msg">' + escapeHtml(issue.message) + '</span>' +
+      '<span class="issue-arrow">\u25BC</span>' +
+    '</div>' +
+    '<div class="issue-body">' +
+      (issue.detail ? '<div class="issue-detail">' + escapeHtml(issue.detail) + '</div>' : '') +
+      '<div class="issue-sug"><strong>\u{1F527} 解决建议：</strong>' + escapeHtml(issue.suggestion) + '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+// ===== 创建命令解析条目 =====
+function createResultItem(item, num) {
+  var div = document.createElement("div");
+  div.className = "result-item";
+  var relHtml = item.related_commands && item.related_commands.length > 0
+    ? item.related_commands.map(function(c) { return '<span class="related-tag">' + escapeHtml(c) + '</span>'; }).join("")
+    : '<span style="color:#94a3b8;font-size:12px;">暂无</span>';
+  var errHtml = item.common_errors && item.common_errors.length > 0
+    ? '<ul class="err-list">' + item.common_errors.map(function(e) { return '<li>' + escapeHtml(e) + '</li>'; }).join("") + '</ul>'
+    : '<span style="color:#94a3b8;font-size:12px;">暂无常见错误</span>';
+  var tsHtml = item.troubleshooting
+    ? '<div class="tshoot-box">' + escapeHtml(item.troubleshooting) + '</div>'
+    : '<span style="color:#94a3b8;font-size:12px;">暂无排错方法</span>';
+  var scHtml = item.scenario ? escapeHtml(item.scenario) : '<span style="color:#94a3b8;">暂无</span>';
+  var knHtml = item.knowledge ? escapeHtml(item.knowledge) : '<span style="color:#94a3b8;">暂无</span>';
+  var cmdDisplay = parseSearchText ? highlightInHtml(escapeHtml(item.command), parseSearchText) : escapeHtml(item.command);
+  var titleDisplay = parseSearchText ? highlightInHtml(escapeHtml(item.title), parseSearchText) : escapeHtml(item.title);
+  div.innerHTML =
+    '<div class="result-header">' +
+      '<span class="result-num">' + num + '</span>' +
+      '<span class="result-cmd">' + cmdDisplay + '</span>' +
+      '<span class="result-cat cat-' + escapeHtml(item.category) + '">' + escapeHtml(item.category) + '</span>' +
+      '<span class="toggle-icon">\u25BC</span>' +
+    '</div>' +
+    '<div class="result-body">' +
+      '<div class="info-row"><div class="info-label">命令说明</div><div class="info-value">' + titleDisplay + '</div><div class="info-value" style="margin-top:3px;color:#475569;font-size:13px;">' + knHtml + '</div></div>' +
+      '<div class="info-row"><div class="info-label">适用场景</div><div class="info-value">' + scHtml + '</div></div>' +
+      '<div class="info-row"><div class="info-label">相关命令</div><div class="related-tags">' + relHtml + '</div></div>' +
+      '<div class="info-row"><div class="info-label">常见错误</div>' + errHtml + '</div>' +
+      '<div class="info-row"><div class="info-label">排错方法</div>' + tsHtml + '</div>' +
+    '</div>';
+  div.querySelector(".result-header").addEventListener("click", function() {
+    var body = div.querySelector(".result-body");
+    var icon = div.querySelector(".toggle-icon");
+    body.classList.toggle("open");
+    icon.classList.toggle("open");
+  });
+  return div;
+}
+
+// ===== 工具函数 =====
+function escapeHtml(t) {
+  if (!t) return "";
+  return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+function escapeJs(s) {
+  return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n");
+}
+function escapeReg(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function highlightInHtml(text, keyword) {
+  if (!keyword) return text;
+  var idx = text.toLowerCase().indexOf(keyword.toLowerCase());
+  if (idx === -1) return text;
+  return text.substring(0, idx) + '<span class="highlight">' + text.substring(idx, idx + keyword.length) + '</span>' + text.substring(idx + keyword.length);
+}
+
+
+// ===== V1.4.1 智能命令分析 =====
+var smartResults=document.getElementById("smartResults"), smartQuery=document.getElementById("smartQuery"), smartAutoList=document.getElementById("smartAutoList"), smartSearchResults=document.getElementById("smartSearchResults");
+function renderSmartResults(rows){if(!rows.length){smartResults.innerHTML='<div class="empty-state"><p>暂无智能分析结果。</p></div>';return;}var html='';rows.forEach(function(x){var ok=x.recognized&&x.level==='info';html+='<div class="smart-result"><div class="smart-line"><span class="smart-no">#'+x.line+'</span><span class="smart-cmd">'+escapeHtml(x.command)+'</span><span class="smart-badge '+(ok?'smart-info':'smart-warn')+'">'+escapeHtml(ok?'已识别':x.type)+'</span><span class="smart-badge">'+escapeHtml(x.module)+'</span></div><div class="smart-detail"><div><strong>上下文：</strong>'+escapeHtml(x.context||'系统/全局视图')+'</div><div><strong>原因：</strong>'+escapeHtml(x.reason||'')+'</div>'+(x.suggest?'<div><strong>修改建议：</strong>'+escapeHtml(x.suggest)+'</div>':'')+(x.knowledge?'<div><strong>知识库：</strong>'+escapeHtml(x.knowledge.description||'')+'</div>':'')+'</div></div>';});smartResults.innerHTML=html;}
+async function runSmartAnalyze(config){var r=await fetch('http://127.0.0.1:8000/api/intelligent/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({config:config})});if(!r.ok)throw new Error();var d=await r.json();renderSmartResults(d.results||[]);}
+async function doSmartSearch(q){q=(q||'').trim();if(!q){smartSearchResults.innerHTML='';return;}try{var r=await fetch('http://127.0.0.1:8000/api/intelligent/search?q='+encodeURIComponent(q));var d=await r.json();var arr=d.results||[];smartSearchResults.innerHTML=arr.length?'<div class="search-count" style="display:block;">知识库匹配 '+arr.length+' 条</div>'+arr.slice(0,8).map(function(x){return '<div class="search-item" onclick="showSmartDetail(\''+escapeJs(x.command||'')+'\')"><div class="search-item-header"><span class="search-cmd">'+escapeHtml(x.command||'')+'</span><span class="search-cat">'+escapeHtml(x.module||'')+'</span></div><div class="search-item-expr">'+escapeHtml(x.description||'')+'</div></div>';}).join(''):'<div class="search-empty">未找到匹配命令</div>';}catch(e){smartSearchResults.innerHTML='<div class="search-empty">无法连接后端</div>';}}
+async function showSmartDetail(cmd){try{var r=await fetch('http://127.0.0.1:8000/api/command/detail?command='+encodeURIComponent(cmd));var d=await r.json();if(d.result){var x=d.result;smartSearchResults.innerHTML='<div class="search-item"><div class="search-cmd">'+escapeHtml(x.command||'')+'</div><p>'+escapeHtml(x.description||'')+'</p><p><strong>语法：</strong>'+escapeHtml(x.syntax||'')+'</p><p><strong>场景：</strong>'+escapeHtml(x.scenes||'')+'</p><p><strong>示例：</strong><br><code>'+escapeHtml(x.example||'')+'</code></p><p><strong>常见错误：</strong>'+escapeHtml((x.errors||[]).join('；'))+'</p></div>';}}catch(e){}}
+document.getElementById('smartSearchBtn').addEventListener('click',function(){doSmartSearch(smartQuery.value);});
+smartQuery.addEventListener('input',async function(){var q=this.value.trim();if(!q){smartAutoList.style.display='none';return;}try{var r=await fetch('http://127.0.0.1:8000/api/autocomplete?q='+encodeURIComponent(q));var d=await r.json(),a=d.results||[];smartAutoList.innerHTML=a.map(function(v){return '<div class="auto-item" data-v="'+escapeHtml(v)+'">'+escapeHtml(v)+'</div>';}).join('');smartAutoList.style.display=a.length?'block':'none';smartAutoList.querySelectorAll('.auto-item').forEach(function(el){el.addEventListener('click',function(){smartQuery.value=this.getAttribute('data-v');smartAutoList.style.display='none';doSmartSearch(smartQuery.value);});});}catch(e){smartAutoList.style.display='none';}});
+parseBtn.addEventListener('click',function(){var cfg=configEl.value.trim();if(cfg)runSmartAnalyze(cfg).catch(function(){smartResults.innerHTML='<div class="empty-state"><p class="error-text">智能分析服务不可用，请检查后端。</p></div>';});});
+
+</script>
+</body>
+</html>
